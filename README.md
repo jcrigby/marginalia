@@ -1,4 +1,4 @@
-# writerhelper
+# Marginalia
 
 > **This is a clone of [icanwrite.app](https://icanwrite.app/).** It was built as a look-alike study of that product. The concept, the feature set, the page structure and the 29-check catalogue are theirs. This project is not affiliated with icanwrite and is not a substitute for it; if you want the real editor, go to icanwrite.app.
 
