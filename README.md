@@ -1,6 +1,8 @@
 # writerhelper
 
-A markdown editor for novelists with AI in the margins. A single-file web app modelled on the structure of icanwrite.app.
+> **This is a clone of [icanwrite.app](https://icanwrite.app/).** It was built as a look-alike study of that product. The concept, the feature set, the page structure and the 29-check catalogue are theirs. This project is not affiliated with icanwrite and is not a substitute for it; if you want the real editor, go to icanwrite.app.
+
+A markdown editor for novelists with AI in the margins, as a single-file web app.
 
 Live page: https://claude.ai/artifact/YHP1XbEU5JB9Rt761xF3rE
 

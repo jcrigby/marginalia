@@ -58,6 +58,9 @@ a.btn{text-decoration:none;color:inherit}
 
 /* ---------- Landing ---------- */
 .wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ack{background:var(--accent);color:var(--accent-ink);font-size:.92em;font-weight:600;text-align:center;padding-block:9px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ack a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.top .ack-link{font-size:.8em;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
 .nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15em;letter-spacing:-.01em;text-decoration:none;color:var(--fg)}
 .brand .mark{width:28px;height:28px;border-radius:7px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--font-book);font-style:italic;font-size:1.2em;line-height:1}
@@ -264,6 +267,7 @@ html.offline .offbar{display:block}
 
 <!-- =============== LANDING =============== -->
 <div id="home">
+  <div class="ack">Marginalia is a clone of <a href="https://icanwrite.app/" target="_blank" rel="noopener">icanwrite.app</a>, built as a look-alike study. The original product, its design and its ideas belong to icanwrite. This copy is not affiliated with it.</div>
   <div class="wrap">
     <nav class="nav">
       <a class="brand" href="#home"><span class="mark">m</span>marginalia</a>
@@ -283,6 +287,7 @@ html.offline .offbar{display:block}
           <a class="btn" href="#write">Try the sample novel</a>
         </div>
         <p class="fine">Edit local files directly in your browser. They stay on your disk.</p>
+        <p class="fine">Modelled on <a href="https://icanwrite.app/" target="_blank" rel="noopener">icanwrite.app</a>. Go there for the real thing.</p>
       </div>
       <svg class="sketch" viewBox="0 0 420 300" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M40 240 C120 232 300 232 380 240" opacity=".5"/>
@@ -508,7 +513,7 @@ html.offline .offbar{display:block}
     </section>
 
     <footer class="footer">
-      <span>marginalia · a markdown editor for writers</span>
+      <span>marginalia · a clone of <a href="https://icanwrite.app/" target="_blank" rel="noopener">icanwrite.app</a>, made as a look-alike study and not affiliated with it</span>
       <div class="links">
         <button data-scroll="checks">Checks</button>
         <button data-scroll="faq">FAQ</button>
@@ -522,6 +527,7 @@ html.offline .offbar{display:block}
 <div id="write" class="app" hidden>
   <div class="top">
     <a class="brand" href="#home"><span class="mark">m</span>marginalia</a>
+    <a class="ack-link" href="https://icanwrite.app/" target="_blank" rel="noopener">clone of icanwrite.app</a>
     <span class="status" id="aiStatus"><i></i>AI: checking…</span>
     <span class="spacer"></span>
     <button class="btn sm" id="btnZen" title="Zen Mode (Esc to leave)">Zen Mode</button>
