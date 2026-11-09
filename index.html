@@ -217,6 +217,11 @@ a.btn{text-decoration:none;color:inherit}
 .msg{max-width:92%;padding:8px 11px;border-radius:10px;font-size:.9em;white-space:pre-wrap;overflow-wrap:anywhere}
 .msg.user{justify-self:end;background:var(--accent);color:var(--accent-ink)}
 .msg.ai{justify-self:start;background:var(--code)}
+.msg.err{background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.msg.queued{opacity:.6}
+#saveState.bad{color:var(--bad);font-weight:700}
+.top select.btn{appearance:auto;padding:.3em .5em}
+#editor:disabled{opacity:.5}
 .msg .mini{display:flex;gap:6px;margin-top:6px}
 .chat .sel{font-size:.8em;color:var(--muted);border:1px dashed var(--line-strong);border-radius:6px;padding:6px 8px;margin-bottom:8px;font-family:var(--font-book);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chat .compose{display:flex;gap:6px;margin-top:8px}
@@ -362,7 +367,7 @@ html.offline .offbar{display:block}
           <p class="book">She felt a <span class="mark-note">sudden, sudden</span> cold climb her arms, cold as ice, and knew that the missing wick was not an accident.</p>
           <div class="note-card">
             <div class="who">Repetitions</div>
-            <p>“sudden” lands twice in four words, and “cold” twice in the same clause. One of each will carry more weight.</p>
+            <p>“sudden” appears twice within 1 word. Cut one, or make the echo deliberate.</p>
             <div class="acts"><span class="btn sm primary">Apply</span><span class="btn sm">Chat</span><span class="btn sm ghost">Dismiss</span></div>
           </div>
         </div>
@@ -397,7 +402,7 @@ html.offline .offbar{display:block}
       <div class="copy">
         <h2>Bring your manuscript in. Take it anywhere.</h2>
         <ul class="bullets">
-          <li>Open any folder of markdown files, including an Obsidian vault</li>
+          <li>Open a folder of markdown files, such as the top level of an Obsidian vault</li>
           <li>Plain text in, plain text out: nothing is locked up</li>
           <li>Compile chapters to Markdown, HTML or a plain manuscript</li>
         </ul>
@@ -441,7 +446,7 @@ html.offline .offbar{display:block}
         <h2>Work with the model tier you prefer</h2>
         <ul class="bullets">
           <li>Quick for brainstorming, Complex for a full-chapter edit</li>
-          <li>Set a default, switch in one click</li>
+          <li>Set a default, switch in one click from the top bar</li>
           <li>The AI runs through your Claude account, so there is no key to paste</li>
         </ul>
       </div>
@@ -464,7 +469,7 @@ html.offline .offbar{display:block}
         <ul class="bullets">
           <li>Runs in Chrome or Edge. Nothing to install.</li>
           <li>Six of the checks run entirely in your browser</li>
-          <li>Lose the connection? Keep writing. The AI waits till you are back.</li>
+          <li>Lose the connection? Keep writing. Checks and messages you start are queued and run when you are back.</li>
         </ul>
       </div>
       <div class="mock">
@@ -478,8 +483,8 @@ html.offline .offbar{display:block}
     <section class="checks-section">
       <h2 style="font-family:var(--font-book);font-weight:500;font-size:2rem">Built for</h2>
       <div class="builtfor">
-        <div class="card"><b>Novelists</b><p>One folder per book, one file per chapter, and an editor that reads the whole thing before it says a word.</p></div>
-        <div class="card"><b>Obsidian writers</b><p>Point it at a vault. The notes stay plain markdown and you get a margin to argue with.</p></div>
+        <div class="card"><b>Novelists</b><p>One folder per book, one file per chapter, and an editor that reads the whole chapter before it says a word.</p></div>
+        <div class="card"><b>Obsidian writers</b><p>Point it at the top folder of a vault. The notes stay plain markdown and you get a margin to argue with.</p></div>
         <div class="card"><b>Writers in a second language</b><p>Articles, tense and natural phrasing get their own passes, with the reason spelled out each time.</p></div>
       </div>
     </section>
@@ -496,10 +501,10 @@ html.offline .offbar{display:block}
     <section class="faq" id="faq">
       <h2>FAQ</h2>
       <details open><summary>Which browsers work, and what about mobile?</summary><p>Desktop Chrome, Edge or any Chromium browser for the full experience. Opening a folder from your disk relies on the File System Access API, which Firefox and Safari have not adopted. Everywhere else the editor still works with an in-browser project.</p></details>
-      <details><summary>Where do my files live?</summary><p>If you add a folder, in that folder: every save writes the .md file back to disk. If you use the in-browser project, in this browser's local storage, which never leaves your machine.</p></details>
+      <details><summary>Where do my files live?</summary><p>If you add a folder, in that folder: every save writes the .md file back to disk while the folder is connected. Browsers forget folder access when the page reloads, so you will see a one-click “Reconnect folder” button; until you press it, edits are kept in this browser and written to disk once you reconnect and save. If you use the in-browser project, files live in this browser's local storage, which never leaves your machine. Adding a folder does not erase the in-browser project; “leave folder” brings it back.</p></details>
       <details><summary>What is markdown?</summary><p>A plain-text format that uses simple symbols for structure: a hash for a heading, asterisks for emphasis. Every file is an ordinary .md file you can open anywhere.</p></details>
-      <details><summary>Can I use it with Obsidian?</summary><p>Yes. Add the vault, or a folder inside it. Subfolders and non-markdown files are ignored. Changes you make here show up in Obsidian and the other way round.</p></details>
-      <details><summary>Which checks work offline?</summary><p>Repetitions, Muscular verbs, Cliché &amp; dead language, Show don't tell, Pacing and Punctuation run as plain pattern matching in the browser. The other 23 checks, custom checks and chat need the AI connection.</p></details>
+      <details><summary>Can I use it with Obsidian?</summary><p>Yes. Add the vault, or a folder inside it. Only .md, .markdown and .txt files at the top level of that folder are opened; subfolders are skipped. While the folder is connected, saves go straight to the vault, and edits made in Obsidian are picked up when you come back to this tab. If a file changed in both places you are told, and your version wins on the next save.</p></details>
+      <details><summary>Which checks work offline?</summary><p>Repetitions, Muscular verbs, Cliché &amp; dead language, Show don't tell, Pacing and Punctuation can run as plain pattern matching in the browser, so they work with no connection at all. When the AI is available they use it instead and read for the full meaning of the check. The other 23 checks, custom checks and chat need the AI connection; if you start one while offline it is queued and runs when you are back online.</p></details>
       <details><summary>Does it keep backups?</summary><p>No. Put the folder in Dropbox, Google Drive or OneDrive if you want version history. The in-browser project can be cleared by clearing site data, so export it now and then.</p></details>
     </section>
 
@@ -533,7 +538,8 @@ html.offline .offbar{display:block}
     <button class="btn sm" id="btnZen" title="Zen Mode (Esc to leave)">Zen Mode</button>
     <button class="btn sm" id="btnPreview">Preview</button>
     <button class="btn sm" id="btnExport">Export</button>
-    <button class="btn sm primary" id="btnCheck">Check with AI</button>
+    <select id="tierTop" class="btn sm" aria-label="Model tier" title="Model tier for checks and chat"><option value="quick">Quick</option><option value="default">Default</option><option value="complex">Complex</option></select>
+    <button class="btn sm primary" id="btnCheck">Checks</button>
   </div>
   <div class="offbar">You're offline. Editing and saving work as usual. AI needs a connection.</div>
 
@@ -542,7 +548,8 @@ html.offline .offbar{display:block}
     <ul class="files" id="fileList"></ul>
     <div class="ft">
       <div class="total" id="projectTotal"></div>
-      <div class="row"><button class="btn sm" id="btnFolder">+ add folder</button><button class="btn sm ghost" id="btnSource" title="Where these files live"></button></div>
+      <div class="row"><button class="btn sm" id="btnFolder">+ add folder</button></div>
+      <div id="sourceBox"></div>
     </div>
   </aside>
 
@@ -619,68 +626,89 @@ html.offline .offbar{display:block}
 </div>
 <div id="toast" hidden></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <script>
 (function(){
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const STORE='marginalia.v1';
+const STORE='marginalia.v1', STORE_BROWSER='marginalia.browser.v1', STORE_BACKUP='marginalia.folder-backup.v1';
 const uid=()=>Math.random().toString(36).slice(2,10);
 const COLORS=[null,'#4f7ee8','#3bb273','#e3a21a','#d86a6a','#9b6fd6'];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtN=n=>n.toLocaleString('en-US');
-const words=t=>{const m=t.trim().match(/\S+/g);return m?m.length:0};
+// Words: whitespace tokens that contain at least one letter or digit, so markdown marks ("#", "---", "*") do not count.
+const words=t=>{const m=t.match(/\S+/g);if(!m)return 0;let n=0;for(const w of m) if(/[\p{L}\p{N}]/u.test(w)) n++;return n};
+const offline=()=>navigator.onLine===false;
 
-/* ---------- checks catalogue ---------- */
-const STOP=new Set('about after again against along among around because before being below between could every first found great himself herself house little might never night other place right should since small still their there these thing think those three through under until where which while would years young people something nothing someone anything another without toward across though really'.split(' '));
-const CLICHES=['at the end of the day','cold as ice','in the nick of time','heart skipped a beat','blood ran cold','deafening silence','time stood still','a chill ran down','every fiber of','every fibre of','white as a sheet','crystal clear','last but not least','tip of the iceberg','needle in a haystack','dead of night','quiet as a mouse','like a ton of bricks','all hell broke loose','piercing blue eyes','let out a breath','a wave of relief','sent shivers down','the calm before the storm','only time will tell','without a second thought','with bated breath'];
-const LY_OK=new Set('only family early likely reply apply supply fly ally belly bully holy july lily rely ugly silly jelly daily lonely friendly lovely elderly assembly butterfly folly hilly chilly jolly melancholy anomaly italy fully multiply imply comply supply rally tally ally belly dolly'.split(' '));
-const FILTER=/\b(felt|feel|saw|see|heard|hear|noticed|notice|realized|realised|seemed|seem|knew|know|wondered|wonder|watched|watch|decided|decide|thought)\b/gi;
-
-function sentences(text){ // exact substrings with offsets
-  const out=[]; const re=/[^.!?\n]+[.!?]*["”’]?/g; let m;
-  while((m=re.exec(text))){ if(m[0].trim()) out.push({s:m[0],i:m.index}); }
+/* ---------- sentence model shared by the offline checks ---------- */
+const ABBR=/(?:\b(?:Mr|Mrs|Ms|Dr|St|Mt|Prof|Sr|Jr|vs|etc|No|Capt|Lt|Gen|Col|Rev|Hon)|\b\p{Lu}|\b[ap]\.m)\.["”’]?$/u;
+function sentences(text){ // exact substrings with offsets; skips markdown structure lines; merges after abbreviations
+  const out=[]; const re=/[^.!?\n]+[.!?]*["”’]?/g; let m; let lineStart=0, nl=text.indexOf('\n');
+  while((m=re.exec(text))){
+    const s=m[0]; if(!s.trim()) continue;
+    while(nl!==-1&&nl<m.index){ lineStart=nl+1; nl=text.indexOf('\n',lineStart); }
+    if(/^\s*(#|[-*+] |>|\d+\. |---)/.test(text.substr(lineStart,6))) continue;
+    const prev=out[out.length-1];
+    if(prev && prev.i+prev.s.length===m.index && ABBR.test(prev.s)) prev.s+=s; else out.push({s,i:m.index});
+  }
   return out;
 }
-const sentenceAt=(text,idx)=>{ for(const x of sentences(text)){ if(idx>=x.i && idx<x.i+x.s.length) return x.s.trim(); } return text.slice(Math.max(0,idx-40),idx+40).trim(); };
+function sentenceFinder(text){
+  const sents=sentences(text);
+  return idx=>{ let lo=0,hi=sents.length-1; while(lo<=hi){ const mid=(lo+hi)>>1, x=sents[mid]; if(idx<x.i) hi=mid-1; else if(idx>=x.i+x.s.length) lo=mid+1; else { const lead=x.s.length-x.s.trimStart().length; return {quote:x.s.trim(),pos:x.i+lead}; } }
+    const a=Math.max(0,idx-40); return {quote:text.slice(a,idx+40).trim(),pos:a}; };
+}
 const uniqByQuote=notes=>{const seen=new Set();return notes.filter(n=>n.quote&&!seen.has(n.quote)&&seen.add(n.quote))};
+const CAP=10, RAW=14;
+
+const STOP=new Set('about after again against along among around because before being below between could every first found great himself herself house little might never night other place right should since small still their there these thing think those three through under until where which while would years young people something nothing someone anything another without toward across though really'.split(' '));
+const CLICHES=['at the end of the day','cold as ice','in the nick of time','heart skipped a beat','blood ran cold','deafening silence','time stood still','a chill ran down','every fiber of','every fibre of','white as a sheet','crystal clear','last but not least','tip of the iceberg','needle in a haystack','dead of night','quiet as a mouse','like a ton of bricks','all hell broke loose','piercing blue eyes','let out a breath','a wave of relief','sent shivers down','the calm before the storm','only time will tell','without a second thought','with bated breath'].map(c=>({c,re:new RegExp('\\b'+c.replace(/ /g,'\\s+')+'\\b','gi')}));
+const LY_OK=new Set('only family early likely reply apply supply fly ally belly bully holy july lily rely ugly silly jelly daily lonely friendly lovely elderly assembly butterfly folly hilly chilly jolly melancholy anomaly italy fully multiply imply comply rally tally dolly ghostly costly monopoly bodily firefly deadly kindly orderly womanly manly worldly otherworldly unlikely likely sickly prickly wobbly bubbly curly burly surly oily wily holy unholy ally bully gully sully'.split(' '));
+// Past-tense narrative filter verbs only: present-tense forms mostly occur in dialogue and the noun "watch" is not a filter word.
+const FILTER=/\b(felt|saw|heard|noticed|realized|realised|seemed|knew|wondered|watched|decided|thought|sensed|observed)\b/gi;
 
 const LOCAL={
   repetitions(text){
-    const notes=[]; const re=/[A-Za-z']+/g; let m; const last=new Map(); let idx=0;
-    while((m=re.exec(text))){ const w=m[0].toLowerCase(); idx++;
+    const notes=[]; const re=/[\p{L}\p{M}'’]+/gu; let m; const last=new Map(); let idx=0;
+    while((m=re.exec(text)) && notes.length<RAW){ const w=m[0].toLowerCase(); idx++;
       if(w.length>=5 && !STOP.has(w)){ const p=last.get(w);
-        if(p && idx-p.idx<=40){ const span=text.slice(p.pos,m.index+m[0].length); if(span.length<=180) notes.push({quote:span,note:`“${w}” appears twice within ${idx-p.idx} words. Cut one, or make the echo deliberate.`}); }
+        if(p && idx-p.idx<=40){ const span=text.slice(p.pos,m.index+m[0].length); if(span.length<=180) notes.push({quote:span,pos:p.pos,note:`“${w}” appears twice within ${idx-p.idx} words. Cut one, or make the echo deliberate.`}); }
         last.set(w,{idx,pos:m.index}); } }
-    return uniqByQuote(notes).slice(0,10);
+    return uniqByQuote(notes).slice(0,CAP);
   },
   adverbs(text){
-    const notes=[]; const re=/\b([A-Za-z]{4,}ly)\b/g; let m;
-    while((m=re.exec(text))){ const w=m[1].toLowerCase(); if(LY_OK.has(w)) continue;
-      notes.push({quote:sentenceAt(text,m.index),note:`“${m[1]}” props up the verb. A stronger verb usually does the adverb's job on its own.`}); }
-    return uniqByQuote(notes).slice(0,10);
+    const notes=[]; const at=sentenceFinder(text); const re=/\b(\p{L}{4,}ly)\b/gu; let m;
+    while((m=re.exec(text)) && notes.length<RAW){ const w=m[1].toLowerCase(); if(LY_OK.has(w)) continue;
+      const s=at(m.index); notes.push({quote:s.quote,pos:s.pos,note:`“${m[1]}” props up the verb. A stronger verb usually does the adverb's job on its own.`}); }
+    return uniqByQuote(notes).slice(0,CAP);
   },
   cliches(text){
-    const notes=[]; const low=text.toLowerCase();
-    for(const c of CLICHES){ let i=low.indexOf(c); while(i>=0){ notes.push({quote:text.slice(i,i+c.length),note:`“${c}” is worn smooth. Reach for the specific image this scene actually has.`}); i=low.indexOf(c,i+1);} }
-    return uniqByQuote(notes).slice(0,10);
+    const notes=[];
+    for(const {c,re} of CLICHES){ re.lastIndex=0; let m; while((m=re.exec(text)) && notes.length<RAW){ notes.push({quote:m[0],pos:m.index,note:`“${c}” is worn smooth. Reach for the specific image this scene actually has.`}); } }
+    return uniqByQuote(notes).slice(0,CAP);
   },
   filter(text){
-    const notes=[]; let m; FILTER.lastIndex=0;
-    while((m=FILTER.exec(text))){ notes.push({quote:sentenceAt(text,m.index),note:`“${m[1]}” is a filter word: it reports the perceiving instead of the thing perceived. Try showing the thing itself.`}); }
-    return uniqByQuote(notes).slice(0,10);
+    const notes=[]; const at=sentenceFinder(text); let m; FILTER.lastIndex=0;
+    while((m=FILTER.exec(text)) && notes.length<RAW){ const s=at(m.index); notes.push({quote:s.quote,pos:s.pos,note:`“${m[1]}” is a filter word: it reports the perceiving instead of the thing perceived. Try showing the thing itself.`}); }
+    return uniqByQuote(notes).slice(0,CAP);
   },
   pacing(text){
-    const notes=[]; for(const x of sentences(text)){ const n=words(x.s); if(n>=35) notes.push({quote:x.s.trim(),note:`This sentence runs ${n} words. Fine if the drift is the point; otherwise find the natural break.`}); }
-    const run=[]; for(const x of sentences(text)){ if(words(x.s)<=6) run.push(x); else run.length=0; if(run.length===5){ notes.push({quote:text.slice(run[0].i,run[4].i+run[4].s.length).trim(),note:'Five short sentences in a row. Staccato reads as tension; make sure that is what you want here.'}); run.length=0; } }
-    return uniqByQuote(notes).slice(0,10);
+    const notes=[]; const sents=sentences(text);
+    for(const x of sents){ const n=words(x.s); if(n>=35){ const lead=x.s.length-x.s.trimStart().length; notes.push({quote:x.s.trim(),pos:x.i+lead,note:`This sentence runs ${n} words. Fine if the drift is the point; otherwise find the natural break.`}); if(notes.length>=RAW) break; } }
+    const run=[]; for(const x of sents){ if(words(x.s)<=6) run.push(x); else run.length=0; if(run.length===5){ const lead=run[0].s.length-run[0].s.trimStart().length; notes.push({quote:text.slice(run[0].i+lead,run[4].i+run[4].s.length).trim(),pos:run[0].i+lead,note:'Five short sentences in a row. Staccato reads as tension; make sure that is what you want here.'}); run.length=0; if(notes.length>=RAW) break; } }
+    return uniqByQuote(notes).slice(0,CAP);
   },
   punctuation(text){
-    const notes=[]; let m;
-    const dbl=/\S {2,}\S/g; while((m=dbl.exec(text))){ const q=text.slice(Math.max(0,m.index-12),m.index+m[0].length+12); notes.push({quote:q,note:'Double space between words.',suggestion:q.replace(/ {2,}/g,' ')}); }
-    const sp=/\w +[,.;:!?]/g; while((m=sp.exec(text))){ const q=sentenceAt(text,m.index); notes.push({quote:q,note:'Space before punctuation.',suggestion:q.replace(/ +([,.;:!?])/g,'$1')}); }
-    const dots=/[^.]\.\.(?!\.)/g; while((m=dots.exec(text))){ notes.push({quote:sentenceAt(text,m.index),note:'Two dots. An ellipsis has three, a full stop one.'}); }
-    text.split(/\n\s*\n/).forEach(p=>{ const n=(p.match(/"/g)||[]).length; if(n%2===1) notes.push({quote:p.slice(0,80),note:'Odd number of straight quotes in this paragraph. A quotation may be left open.'}); });
-    return uniqByQuote(notes).slice(0,12);
+    const notes=[]; const at=sentenceFinder(text); let m;
+    const dbl=/\S {2,}\S/g; while((m=dbl.exec(text)) && notes.length<RAW){ const s=at(m.index); const q=s.quote.includes('  ')?s.quote:text.slice(m.index,m.index+m[0].length); notes.push({quote:q,pos:s.quote.includes('  ')?s.pos:m.index,note:'Double space between words.',suggestion:q.replace(/ {2,}/g,' ')}); }
+    const sp=/\w +[,.;:!?]/g; while((m=sp.exec(text)) && notes.length<RAW){ const s=at(m.index); notes.push({quote:s.quote,pos:s.pos,note:'Space before punctuation.',suggestion:s.quote.replace(/ +([,.;:!?])/g,'$1')}); }
+    const dots=/[^.]\.\.(?!\.)/g; while((m=dots.exec(text)) && notes.length<RAW){ const s=at(m.index); notes.push({quote:s.quote,pos:s.pos,note:'Two dots. An ellipsis has three, a full stop one.'}); }
+    let off=0; for(const p of text.split(/\n\s*\n/)){ const straight=(p.match(/"/g)||[]).length, open=(p.match(/“/g)||[]).length, close=(p.match(/”/g)||[]).length;
+      if(straight%2===1) notes.push({quote:p.slice(0,80),pos:off,note:'Odd number of straight quotes in this paragraph. A quotation may be left open.'});
+      else if(open!==close) notes.push({quote:p.slice(0,80),pos:off,note:`Opening and closing curly quotes do not match in this paragraph (${open} open, ${close} close).`});
+      off+=p.length+2; if(notes.length>=RAW) break; }
+    return uniqByQuote(notes).slice(0,CAP+2);
   }
 };
 
@@ -728,9 +756,10 @@ const DEFAULT_SNIPPETS=[
   {name:'simplify',prompt:'Rewrite the selected passage in plainer, shorter sentences. Cut anything the reader does not need. Return only the rewrite.'},
   {name:'punch up',prompt:'Rewrite the selected passage with more energy: stronger verbs, sharper images, no adverbs. Offer three numbered versions.'}
 ];
-function seed(){
-  return {projectName:'The Lamp Room',source:'browser',activeId:'f1',comments:[],customChecks:[],snippets:DEFAULT_SNIPPETS.map(s=>({...s})),
-    settings:{font:'serif',size:18,tier:'default'},runs:{},checksDone:0,
+function seed(keep){
+  const k=keep||{};
+  return {projectName:'The Lamp Room',source:'browser',activeId:'f1',comments:[],rules:'',customChecks:k.customChecks||[],snippets:k.snippets||DEFAULT_SNIPPETS.map(s=>({...s})),
+    settings:k.settings||{font:'serif',size:18,tier:'default'},runs:{},checksDone:k.checksDone||0,
     files:[
       {id:'f0',name:'00-outline.md',color:'#4f7ee8',content:`# Outline\n\n- **Ines**, 31, keeper of the Sayle Head light since her father's death.\n- **The ferryman**, Doran, who stops coming in the second week of November.\n- The missing wick is the first of several small thefts.\n- Low water reveals the wreck of the *Perseverance*.\n\n> Working question: who is tending the second light, and why does it only show when Ines sleeps?`},
       {id:'f1',name:'01-the-lamp-room.md',color:'#3bb273',content:`# Chapter One\n\nThe lamp room smelled of brass polish and old rain. Ines counted the wicks twice, the way her father had, and found one missing. Beyond the glass the harbour lights were coming on one by one, as if someone out there were answering.\n\nShe felt a sudden, sudden cold climb her arms, cold as ice, and knew that the missing wick was not an accident. Nobody came up here. Nobody had come up here in eleven years except her, and before her the old man, and before the old man a long line of other keepers who were all photographs now in the hallway downstairs, each of them holding the same brass key she carried on a bootlace around her neck, each of them looking very slightly to the left of the camera as if something in the room behind the photographer had just moved.\n\nShe went down.  The stairs turned seventy-one times, she had counted them as a girl and the number had never changed, and at the bottom the kitchen was exactly as she had left it: the kettle, the chair, the chart of the sound pinned at its four corners. She noticed the window was open.\n\n"Doran?" she said, quietly, to the empty room.\n\nThe sea said nothing. The sea rarely did. It was very good at that.`},
@@ -738,94 +767,183 @@ function seed(){
       {id:'f3',name:'03-low-water.md',color:'#e3a21a',content:`# Chapter Three\n\nThe spring tide drew the sound back further than she had ever seen it. Rocks she had no names for stood up out of the mud, black and streaming, and between them, lying on its side like a sleeping dog, was a boat.\n\nNot a boat. A ship, or what was left of one.`}
     ]};
 }
-function load(){ try{ const s=JSON.parse(localStorage.getItem(STORE)); if(s&&s.files) return s; }catch(e){} return null; }
-let state=load()||seed();
-state.runs=state.runs||{}; state.customChecks=state.customChecks||[]; state.snippets=state.snippets||DEFAULT_SNIPPETS.map(s=>({...s})); state.checksDone=state.checksDone||0;
-let saveTimer=null;
-function save(){ try{ localStorage.setItem(STORE,JSON.stringify(state)); }catch(e){} }
+function readStore(key){ try{ const s=JSON.parse(localStorage.getItem(key)); if(s&&s.files) return s; }catch(e){} return null; }
+let state=readStore(STORE)||seed();
+state.runs=state.runs||{}; state.customChecks=state.customChecks||[]; state.snippets=state.snippets||DEFAULT_SNIPPETS.map(s=>({...s})); state.checksDone=state.checksDone||0; state.rules=state.rules||'';
+let saveTimer=null, storageFailed=false;
+function save(){
+  try{ localStorage.setItem(STORE,JSON.stringify(state)); if(storageFailed){ storageFailed=false; setSaveState('saved'); } return true; }
+  catch(e){ if(!storageFailed) toast('Not saved: this browser\'s storage is full or blocked. Export your work, or add a folder so files save to disk.'); storageFailed=true; setSaveState('not saved: storage full'); return false; }
+}
+function setSaveState(t){ const el=$('#saveState'); if(el){ el.textContent=t; el.classList.toggle('bad',/not saved/.test(t)); } }
 const active=()=>state.files.find(f=>f.id===state.activeId)||state.files[0];
 
+/* ---------- IndexedDB (folder handle only) ---------- */
+const idb={
+  open(){ return new Promise((res,rej)=>{ try{ const r=indexedDB.open('marginalia',1); r.onupgradeneeded=()=>r.result.createObjectStore('kv'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); },
+  async get(k){ try{ const db=await this.open(); return await new Promise((res,rej)=>{ const t=db.transaction('kv').objectStore('kv').get(k); t.onsuccess=()=>res(t.result); t.onerror=()=>rej(t.error); }); }catch(e){ return undefined; } },
+  async set(k,v){ try{ const db=await this.open(); await new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }catch(e){} },
+  async del(k){ try{ const db=await this.open(); await new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').delete(k); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }catch(e){} }
+};
+
 /* ---------- folder access ---------- */
-const handles=new Map(); let dirHandle=null;
+const handles=new Map(); let dirHandle=null; let savedDir=null; // savedDir: handle remembered from a previous visit, not yet re-authorised
+const disk=new Map(); // file id -> {mtime, text} as last seen on disk (memory only)
+function stashBrowserProject(){ if(state.source==='browser'){ try{ localStorage.setItem(STORE_BROWSER,JSON.stringify(state)); }catch(e){} } }
+async function readFolder(dir){
+  const out=[]; for await (const [name,h] of dir.entries()){ if(h.kind==='file'&&/\.(md|markdown|txt)$/i.test(name)){ const f=await h.getFile(); out.push({name,h,text:await f.text(),mtime:f.lastModified}); } }
+  out.sort((a,b)=>a.name.localeCompare(b.name)); return out;
+}
+async function loadFolder(dir,{reconnect=false}={}){
+  const entries=await readFolder(dir);
+  const prev=new Map(reconnect?state.files.map(f=>[f.name,f]):[]);
+  let differed=0; handles.clear(); disk.clear();
+  const files=entries.map(e=>{ const p=prev.get(e.name); const id=p?p.id:uid(); if(p&&p.content!==e.text) differed++; handles.set(id,e.h); disk.set(id,{mtime:e.mtime,text:e.text}); return {id,name:e.name,content:e.text,color:p?p.color:null}; });
+  if(reconnect&&differed){ try{ localStorage.setItem(STORE_BACKUP,JSON.stringify(state)); }catch(e){} }
+  const keepIds=new Set(files.map(f=>f.id));
+  dirHandle=dir; savedDir=null; state.source='folder'; state.projectName=dir.name; state.files=files;
+  state.activeId=keepIds.has(state.activeId)?state.activeId:files[0]?.id;
+  state.comments=reconnect?state.comments.filter(c=>keepIds.has(c.fileId)):[]; if(!reconnect) state.runs={};
+  save(); renderAll();
+  if(reconnect) toast(differed?`Reconnected “${dir.name}”. ${differed} file${differed===1?'':'s'} differed from the browser copy; disk won, and the browser copy is kept as a backup.`:`Reconnected “${dir.name}”`);
+  else toast(files.length?`Opened “${dir.name}”: ${files.length} file${files.length===1?'':'s'}`:'No markdown files in that folder. Add one with + and it will be created there.');
+}
 async function addFolder(){
   if(!window.showDirectoryPicker){ toast('Opening a folder needs Chrome or Edge on desktop. Working with the in-browser project instead.'); return; }
   try{
     const dir=await window.showDirectoryPicker({mode:'readwrite'});
-    const files=[];
-    for await (const [name,h] of dir.entries()){ if(h.kind==='file'&&/\.(md|markdown|txt)$/i.test(name)){ const f=await h.getFile(); const id=uid(); files.push({id,name,content:await f.text(),color:null}); handles.set(id,h); } }
-    if(!files.length){ toast('No markdown files in that folder. Add one with + and it will be created there.'); }
-    files.sort((a,b)=>a.name.localeCompare(b.name));
-    dirHandle=dir; state.projectName=dir.name; state.source='folder'; state.files=files; state.activeId=files[0]?.id; state.comments=[]; state.runs={};
-    save(); renderAll(); toast(`Opened “${dir.name}”: ${files.length} file${files.length===1?'':'s'}`);
-  }catch(e){ if(e&&e.name==='AbortError') return; toast('Could not open a folder here ('+(e.message||e.name)+'). Working with the in-browser project.'); }
+    stashBrowserProject();
+    await loadFolder(dir); await idb.set('dir',dir);
+  }catch(e){ if(e&&e.name==='AbortError') return; toast('Could not open a folder here ('+(e.message||e.name)+'). If this page is embedded, open it in its own tab. Working with the in-browser project.'); }
+}
+async function reconnectFolder(){
+  if(!savedDir){ addFolder(); return; }
+  try{ const p=await savedDir.requestPermission({mode:'readwrite'}); if(p!=='granted'){ toast('Permission was not granted. The folder stays disconnected.'); return; } await loadFolder(savedDir,{reconnect:true}); }
+  catch(e){ toast('Could not reconnect: '+(e.message||e.name)); }
+}
+function leaveFolder(){
+  const prev=readStore(STORE_BROWSER);
+  handles.clear(); disk.clear(); dirHandle=null; savedDir=null; idb.del('dir');
+  state=prev||seed({settings:state.settings,snippets:state.snippets,customChecks:state.customChecks,checksDone:state.checksDone}); state.source='browser';
+  save(); renderAll(); toast('Back to the in-browser project');
 }
 async function writeBack(file){
-  const h=handles.get(file.id); if(!h) return;
-  try{ const w=await h.createWritable(); await w.write(file.content); await w.close(); }catch(e){ toast('Could not write '+file.name+': '+e.message); }
+  const h=handles.get(file.id); if(!h) return false;
+  try{ const w=await h.createWritable(); await w.write(file.content); await w.close(); const f=await h.getFile(); disk.set(file.id,{mtime:f.lastModified,text:file.content}); return true; }
+  catch(e){ toast('Could not write '+file.name+': '+e.message); return false; }
+}
+async function refreshFromDisk(all){
+  if(!dirHandle) return;
+  const list=all?state.files:[active()].filter(Boolean); let changed=0;
+  for(const f of list){ const h=handles.get(f.id); const d=disk.get(f.id); if(!h||!d) continue;
+    try{ const file=await h.getFile(); if(file.lastModified===d.mtime) continue; const t=await file.text(); if(t===d.text){ d.mtime=file.lastModified; continue; }
+      if(f.content===d.text){ f.content=t; changed++; } else { toast(`${f.name} changed on disk and here. Keeping your version; it will overwrite the disk copy on the next save.`); }
+      d.mtime=file.lastModified; d.text=t; }catch(e){}
+  }
+  if(changed){ save(); renderFiles(); renderEditor(); renderComments(); toast(`${changed} file${changed===1?'':'s'} reloaded from disk`); }
+}
+async function restoreFolderLink(){
+  if(state.source!=='folder') return;
+  const d=await idb.get('dir'); if(!d){ renderSource(); return; }
+  savedDir=d;
+  try{ if(await d.queryPermission({mode:'readwrite'})==='granted'){ await loadFolder(d,{reconnect:true}); return; } }catch(e){}
+  renderSource();
 }
 
 /* ---------- AI ---------- */
-let sampleNS=undefined, downloadsNS=undefined;
+let sampleNS=undefined, downloadsNS=undefined, aiDenied=false;
 async function ai(){ if(sampleNS!==undefined) return sampleNS; try{ sampleNS=window.claude&&window.claude.use?await window.claude.use('sample'):null; }catch(e){ sampleNS=null; } setAIStatus(); return sampleNS; }
 async function dl(){ if(downloadsNS!==undefined) return downloadsNS; try{ downloadsNS=window.claude&&window.claude.use?await window.claude.use('downloads'):null; }catch(e){ downloadsNS=null; } return downloadsNS; }
-function setAIStatus(){ const el=$('#aiStatus'); if(!el) return; if(sampleNS===undefined){el.className='status';el.innerHTML='<i></i>AI: checking…';} else if(sampleNS){el.className='status ok';el.innerHTML='<i></i>AI: ready';} else {el.className='status off';el.innerHTML='<i></i>AI: offline checks only';} renderChecks(); }
+const aiUsable=()=>!!sampleNS&&!aiDenied;
+function setAIStatus(){
+  const el=$('#aiStatus'); if(!el) return; let cls='status', txt='AI: checking…';
+  if(sampleNS===null){ cls='status off'; txt='AI: offline checks only'; }
+  else if(aiDenied){ cls='status off'; txt='AI: not allowed for this page'; }
+  else if(sampleNS&&offline()){ cls='status off'; txt=`AI: waiting for connection${queue.length?` (${queue.length} queued)`:''}`; }
+  else if(sampleNS){ cls='status ok'; txt='AI: ready'; }
+  el.className=cls; el.innerHTML='<i></i>'+esc(txt);
+  renderChecks(); renderChat();
+}
 const errMsg=e=>{ const c=e&&e.code; if(c==='not_granted') return 'AI was not allowed for this page. Offline checks still work.'; if(c==='rate_limited') return 'The AI is rate-limited right now. Try again in a minute.'; if(c==='prompt_too_large') return 'This chapter is too long for one check. Split it or select a passage.'; return 'AI request failed: '+((e&&e.message)||e); };
+function noteAIError(e){ if(e&&e.code==='not_granted'){ aiDenied=true; setAIStatus(); } }
+
+/* offline queue: AI work asked for while offline runs when the connection returns */
+const queue=[];
+function enqueue(label,fn){ queue.push({label,fn}); toast(`You're offline. “${label}” will run when the connection is back.`); setAIStatus(); }
+async function drainQueue(){ while(queue.length&&!offline()){ const q=queue.shift(); setAIStatus(); try{ await q.fn(); }catch(e){} } setAIStatus(); }
 
 /* ---------- rendering ---------- */
 function renderAll(){ renderFiles(); renderEditor(); renderChecks(); renderComments(); renderChat(); renderSettings(); renderSource(); }
-function renderSource(){ const b=$('#btnSource'); b.textContent=state.source==='folder'?(dirHandle?'synced to disk':'folder link lost on reload'):'in-browser project'; b.title=state.source==='folder'&&!dirHandle?'The browser forgets folder permissions on reload. Add the folder again to write changes back to disk.':''; }
+function renderSource(){
+  const box=$('#sourceBox'); if(!box) return;
+  if(state.source!=='folder'){ box.innerHTML=`<span class="muted">in-browser project</span>`; return; }
+  if(dirHandle){ box.innerHTML=`<span class="muted">synced to disk</span> <button class="btn sm ghost" id="btnLeaveFolder" title="Go back to the project kept in this browser">leave folder</button>`; return; }
+  box.innerHTML=`<span class="muted">folder not connected</span> <button class="btn sm primary" id="btnReconnect">Reconnect folder</button> <button class="btn sm ghost" id="btnLeaveFolder">leave folder</button><div class="muted" style="font-size:.9em;margin-top:4px">The browser forgets folder access on reload. Reconnect to keep saving to disk; until then edits stay in this browser.</div>`;
+}
+function projectTotals(){ const tw=state.files.reduce((a,f)=>a+words(f.content),0), tc=state.files.reduce((a,f)=>a+f.content.length,0); $('#projectTotal').textContent=`${fmtN(tw)} words · ${fmtN(tc)} characters · ${state.files.length} file${state.files.length===1?'':'s'}`; }
 function renderFiles(){
   const ul=$('#fileList'); ul.innerHTML='';
-  state.files.forEach((f,i)=>{
+  state.files.forEach(f=>{
     const li=document.createElement('li'); li.className=f.id===state.activeId?'on':''; li.dataset.id=f.id;
     li.innerHTML=`<span class="dot" style="background:${f.color||'transparent'}" title="Colour"></span><span class="name" title="${esc(f.name)}">${esc(f.name)}</span><span class="wc num">${fmtN(words(f.content))}</span><span class="tools"><button data-act="up" title="Move up">↑</button><button data-act="down" title="Move down">↓</button><button data-act="ren" title="Rename">✎</button><button data-act="del" title="Delete">×</button></span>`;
     ul.appendChild(li);
   });
-  const tw=state.files.reduce((a,f)=>a+words(f.content),0), tc=state.files.reduce((a,f)=>a+f.content.length,0);
-  $('#projectTotal').textContent=`${fmtN(tw)} words · ${fmtN(tc)} characters · ${state.files.length} file${state.files.length===1?'':'s'}`;
-  $('#projectName').value=state.projectName;
+  projectTotals(); $('#projectName').value=state.projectName;
 }
 function renderEditor(){
   const f=active(); const ed=$('#editor');
-  if(!f){ ed.value=''; $('#fileName').textContent='No file'; return; }
+  ed.disabled=!f;
+  if(!f){ ed.value=''; $('#fileName').textContent='No file'; renderCounts(); return; }
   if(ed.value!==f.content) ed.value=f.content;
   $('#fileName').textContent=f.name;
   const sheet=$('#sheet'); sheet.className='sheet f-'+state.settings.font; ed.style.fontSize=state.settings.size+'px'; $('#previewPane').style.fontSize=state.settings.size+'px';
   $$('#fontSeg button').forEach(b=>b.classList.toggle('on',b.dataset.f===state.settings.font));
+  const tt=$('#tierTop'); if(tt&&tt.value!==state.settings.tier) tt.value=state.settings.tier;
   autosize(); renderCounts();
   if(!$('#previewPane').hidden) $('#previewPane').innerHTML=md(f.content);
 }
 function autosize(){ const ed=$('#editor'); ed.style.height='auto'; ed.style.height=Math.max(ed.scrollHeight, window.innerHeight*0.6)+'px'; }
-function renderCounts(){ const f=active(); if(!f) return; $('#fileCounts').textContent=`${fmtN(words(f.content))} words · ${fmtN(f.content.length)} characters`; const ed=$('#editor'); const sel=ed.value.slice(ed.selectionStart,ed.selectionEnd); $('#selCount').textContent=sel?`selected: ${fmtN(words(sel))} words`:''; }
+function renderCounts(){ const f=active(); if(!f){ $('#fileCounts').textContent=''; $('#selCount').textContent=''; return; } $('#fileCounts').textContent=`${fmtN(words(f.content))} words · ${fmtN(f.content.length)} characters`; const ed=$('#editor'); const sel=ed.value.slice(ed.selectionStart,ed.selectionEnd); $('#selCount').textContent=sel?`selected: ${fmtN(words(sel))} words`:''; }
 function renderChecks(){
   const p=$('#panel-checks'); let h='';
   if(sampleNS===null) h+=`<div class="ai-note warn">The AI connection is not available in this view, so only the six offline checks run. Open the page in claude.ai and allow it when asked to run all 29.</div>`;
+  else if(aiDenied) h+=`<div class="ai-note warn">AI was not allowed for this page, so only the six offline checks run. Reload the page to be asked again.</div>`;
   else if(sampleNS===undefined) h+=`<div class="ai-note">Connecting to the AI… offline checks are ready now.</div>`;
-  else h+=`<div class="ai-note">Each check reads the open file and leaves its notes in Comments. First run asks you to allow the AI for this page.</div>`;
+  else if(offline()) h+=`<div class="ai-note warn">You're offline. The six offline checks run now; any other check you start is queued until the connection is back.</div>`;
+  else h+=`<div class="ai-note">Each check reads the open file and leaves its notes in Comments. The six marked “offline” use the AI when it is available and pattern matching when it is not. The first run asks you to allow the AI for this page.</div>`;
   const f=active();
-  const row=c=>{ const r=f&&state.runs[c.id]&&state.runs[c.id][f.id]; const needsAI=!c.local&&!sampleNS;
-    return `<div class="check-row" data-check="${c.id}"><span class="nm">${esc(c.name)} ${c.local?'<span class="pill">offline</span>':''}</span>${r?`<span class="res">${r.count} note${r.count===1?'':'s'}${r.score!=null?` · ${r.score}/30`:''}</span>`:''}<button class="btn sm ${needsAI?'ghost':''} run" ${needsAI?'disabled title="Needs the AI connection"':''}>Run</button></div>`; };
+  const row=c=>{ const r=f&&state.runs[c.id]&&state.runs[c.id][f.id]; const needsAI=!c.local&&!aiUsable();
+    return `<div class="check-row" data-check="${c.id}"><span class="nm">${esc(c.name)} ${c.local?'<span class="pill" title="Works without the AI connection">offline</span>':''}</span>${r?`<span class="res" title="${r.mode==='local'?'pattern matching':'AI'}">${r.count} note${r.count===1?'':'s'}${r.score!=null?` · ${r.score}/30`:''}${r.mode==='local'?' · offline':''}</span>`:''}<button class="btn sm ${needsAI?'ghost':''} run" ${needsAI?'disabled title="Needs the AI connection"':''}>Run</button></div>`; };
   CHECKS.forEach(([g,list])=>{ h+=`<h4>${g}</h4>`; list.forEach(([id])=>h+=row(ALL_CHECKS.find(c=>c.id===id))); });
   h+=`<h4>Your checks</h4>`;
   if(state.customChecks.length) state.customChecks.forEach(c=>h+=row({id:c.id,name:c.name,local:null}));
   else h+=`<div class="empty">No custom checks yet. Add one under Settings.</div>`;
   p.innerHTML=h;
 }
-function findQuote(content,q){ let i=content.indexOf(q); if(i<0){ const t=q.trim(); if(t) i=content.indexOf(t); if(i>=0) q=t; } return i<0?null:{i,len:q.length}; }
+// Find the occurrence of q nearest to hint (the position the note was created at), so repeated phrases anchor to the right place.
+function findQuote(content,q,hint){
+  const search=s=>{ const hits=[]; let i=content.indexOf(s); while(i>=0&&hits.length<64){ hits.push(i); i=content.indexOf(s,i+1); } return hits; };
+  let s=q, hits=search(s); if(!hits.length){ s=q.trim(); hits=s?search(s):[]; } if(!hits.length) return null;
+  const h=typeof hint==='number'?hint:0; let best=hits[0]; for(const x of hits) if(Math.abs(x-h)<Math.abs(best-h)) best=x;
+  return {i:best,len:s.length};
+}
 function renderComments(){
   const f=active(); const p=$('#panel-comments'); const list=state.comments.filter(c=>f&&c.fileId===f.id);
   $('#cmtCount').textContent=list.length;
   if(!list.length){ p.innerHTML=`<div class="empty">No comments on this file. Run a check to get some, or select a passage and ask in Chat.</div>`; return; }
-  p.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn sm ghost" id="dismissAll">Dismiss all</button></div>`+list.map(c=>{ const pos=findQuote(f.content,c.quote);
+  p.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn sm ghost" id="dismissAll">Dismiss all</button></div>`+list.map(c=>{ const pos=findQuote(f.content,c.quote,c.pos);
     return `<div class="cmt ${pos?'':'lost'}" data-id="${c.id}"><div class="ck"><span>${esc(c.check)}</span>${pos?'':'<span class="muted">text changed</span>'}</div><div class="q">${esc(c.quote)}</div><div>${esc(c.note)}</div>${c.suggestion?`<div class="sg">${esc(c.suggestion)}</div>`:''}<div class="acts">${c.suggestion&&pos?`<button class="btn sm primary" data-act="apply">Apply</button>`:''}<button class="btn sm" data-act="chat">Chat</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div>`; }).join('');
 }
 let chat=[]; let chatSel={text:'',start:0,end:0}; let chatBusy=false;
 function renderChat(){
   $('#snippetChips').innerHTML=state.snippets.map((s,i)=>`<button class="chip" data-snip="${i}">${esc(s.name)}</button>`).join('');
   $('#chatSel').textContent=chatSel.text?`Selected: ${chatSel.text}`:'No passage selected. Select text in the editor to discuss it.';
-  const log=$('#chatLog'); log.innerHTML=chat.map((m,i)=>`<div class="msg ${m.role==='user'?'user':'ai'}">${esc(m.content)||'Thinking…'}${m.role==='assistant'&&m.content&&!m.pending?`<div class="mini"><button class="btn sm" data-ins="${i}">Insert at cursor</button><button class="btn sm ghost" data-copy="${i}">Copy</button></div>`:''}</div>`).join('');
+  const log=$('#chatLog'); log.innerHTML=chat.map((m,i)=>`<div class="msg ${m.role==='user'?'user':'ai'}${m.error?' err':''}${m.queued?' queued':''}">${esc(m.content)||'Thinking…'}${m.role==='assistant'&&m.content&&!m.pending&&!m.error?`<div class="mini"><button class="btn sm" data-ins="${i}">Insert at cursor</button><button class="btn sm ghost" data-copy="${i}">Copy</button></div>`:''}</div>`).join('');
   log.scrollTop=log.scrollHeight;
-  const note=$('#chatNote'); if(sampleNS===null){ note.hidden=false; note.className='ai-note warn'; note.textContent='Chat needs the AI connection, which is not available in this view.'; } else note.hidden=true;
+  const note=$('#chatNote'); note.hidden=true;
+  if(sampleNS===null){ note.hidden=false; note.textContent='Chat needs the AI connection, which is not available in this view.'; }
+  else if(aiDenied){ note.hidden=false; note.textContent='AI was not allowed for this page, so chat is off. Reload the page to be asked again.'; }
+  else if(sampleNS&&offline()){ note.hidden=false; note.textContent='You\'re offline. Messages you send now are queued and answered when the connection is back.'; }
 }
 function renderSettings(){
   const p=$('#panel-settings'); const s=state.settings;
@@ -834,7 +952,9 @@ function renderSettings(){
   <div class="field"><label for="setFont">Font</label><select id="setFont"><option value="serif" ${s.font==='serif'?'selected':''}>Serif (Newsreader)</option><option value="sans" ${s.font==='sans'?'selected':''}>Sans (Manrope)</option><option value="mono" ${s.font==='mono'?'selected':''}>Monospace (JetBrains Mono)</option></select></div>
   <div class="field"><label for="setSize">Text size: <span id="sizeVal">${s.size}</span>px</label><input type="range" id="setSize" min="14" max="26" value="${s.size}"></div>
   <h4>AI model</h4>
-  <div class="field"><label for="setTier">Model tier</label><select id="setTier"><option value="quick" ${s.tier==='quick'?'selected':''}>Quick: fastest, for brainstorming</option><option value="default" ${s.tier==='default'?'selected':''}>Default: balanced</option><option value="complex" ${s.tier==='complex'?'selected':''}>Complex: best quality, for full edits</option></select></div>
+  <div class="field"><label for="setTier">Default model tier (also switchable in the top bar)</label><select id="setTier"><option value="quick" ${s.tier==='quick'?'selected':''}>Quick: fastest, for brainstorming</option><option value="default" ${s.tier==='default'?'selected':''}>Default: balanced</option><option value="complex" ${s.tier==='complex'?'selected':''}>Complex: best quality, for full edits</option></select></div>
+  <h4>Project: ${esc(state.projectName)}</h4>
+  <div class="field"><label for="setRules">AI rules for this project</label><textarea id="setRules" maxlength="2500" placeholder="British spelling. Past tense, close third person on Ines. Never suggest changing character names.">${esc(state.rules)}</textarea><div class="cnt"><span id="rulesCount">${state.rules.length}</span> / 2500</div><span class="muted" style="font-size:.85em">Sent with every check and chat message for this project. Stored with the project, so the in-browser project and each folder keep their own.</span></div>
   <h4>Chat snippets</h4>
   <div id="snipList">${state.snippets.map((sn,i)=>`<div class="snip" data-i="${i}"><div><input type="text" value="${esc(sn.name)}" aria-label="Snippet name" data-k="name"><textarea aria-label="Snippet prompt" data-k="prompt">${esc(sn.prompt)}</textarea></div><button class="btn sm ghost" data-del="${i}" title="Remove">×</button></div>`).join('')}</div>
   <button class="btn sm" id="addSnip">+ add snippet</button>
@@ -843,65 +963,94 @@ function renderSettings(){
   <div class="field"><label for="ccPrompt">Instructions</label><textarea id="ccPrompt" maxlength="2500" placeholder="Track when each character last slept. Flag scenes where someone has been awake more than 24 hours without the text acknowledging it."></textarea><div class="cnt"><span id="ccCount">0</span> / 2500</div></div>
   <button class="btn sm primary" id="ccSave">Save check</button>
   ${state.customChecks.length?`<div style="margin-top:10px">${state.customChecks.map(c=>`<div class="check-row" data-cc="${c.id}"><span class="nm">${esc(c.name)}</span><button class="btn sm ghost" data-ccdel="${c.id}">Delete</button></div>`).join('')}</div>`:''}
-  <h4>Project</h4>
+  <h4>Data</h4>
   <div class="field"><span class="muted">Checks run in this browser: <b class="num">${fmtN(state.checksDone)}</b></span></div>
   <button class="btn sm" id="resetSample">Reset to the sample novel</button> <span id="resetConfirm"></span>`;
 }
 
 /* ---------- markdown ---------- */
-function inline(s){ return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>').replace(/(^|\s)_([^_\n]+)_/g,'$1<em>$2</em>'); }
-function md(src){
-  const out=[]; let para=[], list=[];
-  const flush=()=>{ if(para.length){ out.push('<p>'+inline(para.join(' '))+'</p>'); para=[]; } if(list.length){ out.push('<ul>'+list.map(l=>'<li>'+inline(l)+'</li>').join('')+'</ul>'); list=[]; } };
+// marked + DOMPurify when they loaded (cdnjs); a small built-in renderer otherwise.
+function inline(s){
+  const codes=[]; s=esc(s).replace(/`([^`]+)`/g,(m,c)=>{ codes.push(c); return `\u0000${codes.length-1}\u0000`; });
+  s=s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,'$1').replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,'<a href="$2">$1</a>')
+     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^\w*])\*([^*\n]+)\*(?!\w)/g,'$1<em>$2</em>').replace(/(^|[^\w_])_([^_\n]+)_(?!\w)/g,'$1<em>$2</em>');
+  return s.replace(/\u0000(\d+)\u0000/g,(m,i)=>`<code>${codes[+i]}</code>`);
+}
+function mdFallback(src){
+  const out=[]; let para=[], list=[], ol=[], quote=[];
+  const flush=()=>{ if(para.length){ out.push('<p>'+inline(para.join(' '))+'</p>'); para=[]; } if(list.length){ out.push('<ul>'+list.map(l=>'<li>'+inline(l)+'</li>').join('')+'</ul>'); list=[]; } if(ol.length){ out.push('<ol>'+ol.map(l=>'<li>'+inline(l)+'</li>').join('')+'</ol>'); ol=[]; } if(quote.length){ out.push('<blockquote><p>'+inline(quote.join(' '))+'</p></blockquote>'); quote=[]; } };
   src.split('\n').forEach(line=>{
     let m;
     if(!line.trim()){ flush(); return; }
-    if((m=line.match(/^(#{1,3})\s+(.*)$/))){ flush(); out.push(`<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`); return; }
-    if(/^(-{3,}|\*{3,})\s*$/.test(line)){ flush(); out.push('<hr>'); return; }
-    if((m=line.match(/^>\s?(.*)$/))){ flush(); out.push('<blockquote><p>'+inline(m[1])+'</p></blockquote>'); return; }
-    if((m=line.match(/^[-*]\s+(.*)$/))){ if(para.length) flush(); list.push(m[1]); return; }
-    if(list.length) flush();
+    if((m=line.match(/^(#{1,6})\s+(.*)$/))){ flush(); out.push(`<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`); return; }
+    if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)){ flush(); out.push('<hr>'); return; }
+    if((m=line.match(/^>\s?(.*)$/))){ if(para.length||list.length||ol.length) flush(); quote.push(m[1]); return; }
+    if((m=line.match(/^\s*[-*+]\s+(.*)$/))){ if(para.length||ol.length||quote.length) flush(); list.push(m[1]); return; }
+    if((m=line.match(/^\s*\d+[.)]\s+(.*)$/))){ if(para.length||list.length||quote.length) flush(); ol.push(m[1]); return; }
+    if(list.length||ol.length||quote.length) flush();
     para.push(line);
   });
   flush(); return out.join('\n');
 }
-const stripMd=s=>s.replace(/^#{1,6}\s+/gm,'').replace(/\*\*|__/g,'').replace(/(^|\s)[*_]([^*_]+)[*_]/g,'$1$2').replace(/^>\s?/gm,'').replace(/^[-*]\s+/gm,'• ').replace(/^-{3,}$/gm,'* * *');
+function md(src){
+  if(window.marked&&window.DOMPurify){ try{ return DOMPurify.sanitize(marked.parse(src,{gfm:true,breaks:false})); }catch(e){} }
+  return mdFallback(src);
+}
+const stripMd=s=>s
+  .replace(/^#{1,6}\s+/gm,'')
+  .replace(/^\s*[-*+]\s+/gm,'• ')
+  .replace(/^\s*([-*_])(\s*\1){2,}\s*$/gm,'* * *')
+  .replace(/^>\s?/gm,'')
+  .replace(/!\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1')
+  .replace(/`([^`]+)`/g,'$1')
+  .replace(/\*\*([^*]+)\*\*|__([^_]+)__/g,(m,a,b)=>a||b)
+  .replace(/(^|[^\w*])\*([^*\n]+)\*(?!\w)/g,'$1$2').replace(/(^|[^\w_])_([^_\n]+)_(?!\w)/g,'$1$2');
 
 /* ---------- checks ---------- */
+const rulesBlock=()=>state.rules.trim()?`\nPROJECT RULES FROM THE WRITER (follow them):\n${state.rules.trim()}\n`:'';
 async function runCheck(id){
   const f=active(); if(!f) return;
   const custom=state.customChecks.find(c=>c.id===id); const c=custom?{id:custom.id,name:custom.name,desc:custom.prompt,local:null}:ALL_CHECKS.find(x=>x.id===id); if(!c) return;
+  const useAI=aiUsable()&&!offline();
+  if(!c.local&&!useAI){ if(sampleNS&&!aiDenied&&offline()){ enqueue(c.name,()=>runCheck(id)); } else toast('This check needs the AI connection.'); return; }
   const row=$(`.check-row[data-check="${id}"] .run`); if(row){ row.disabled=true; row.textContent='Running…'; }
-  let notes=[], score=null, ok=true;
-  if(c.local){ notes=c.local(f.content); score=Math.max(0,30-notes.length*3); }
+  let notes=[], score=null, ok=true, mode='ai';
+  if(c.local&&!useAI){ notes=c.local(f.content); score=Math.max(0,30-notes.length*3); mode='local'; }
   else{
-    const s=await ai(); if(!s){ toast('This check needs the AI connection.'); ok=false; }
-    else{
-      const prompt=`You are a careful fiction editor running one specific check on a chapter of a novel.\nCHECK: ${c.name}\nWHAT TO LOOK FOR: ${c.desc}\n\nRead the markdown chapter below. Return JSON only, no prose, in this exact shape:\n{"score": <integer 0-30, 30 meaning nothing to fix for this check>, "notes": [{"quote": "<a short excerpt copied VERBATIM from the chapter, max 120 characters, so it can be located by exact string match>", "note": "<what to improve and why, one or two sentences, addressed to the writer>", "suggestion": "<optional: the excerpt rewritten; omit if the fix is not a simple replacement>"}]}\nGive at most 8 notes, the most useful first. If the check does not apply, return an empty notes array and a high score.\n\nFILE: ${f.name}\n\n${f.content}`;
-      try{ const r=await s.json(prompt,{modelTier:state.settings.tier,cache:false}); notes=Array.isArray(r&&r.notes)?r.notes:[]; score=Number.isFinite(r&&r.score)?Math.max(0,Math.min(30,Math.round(r.score))):null; }
-      catch(e){ toast(errMsg(e)); ok=false; }
-    }
+    const s=await ai();
+    const prompt=`You are a careful fiction editor running one specific check on a chapter of a novel.\nCHECK: ${c.name}\nWHAT TO LOOK FOR: ${c.desc}\n${rulesBlock()}\nRead the markdown chapter below. Return JSON only, no prose, in this exact shape:\n{"score": <integer 0-30, 30 meaning nothing to fix for this check>, "notes": [{"quote": "<a short excerpt copied VERBATIM from the chapter, max 120 characters, so it can be located by exact string match>", "note": "<what to improve and why, one or two sentences, addressed to the writer>", "suggestion": "<optional: the excerpt rewritten; omit if the fix is not a simple replacement>"}]}\nGive at most 8 notes, the most useful first. If the check does not apply, return an empty notes array and a high score.\n\nFILE: ${f.name}\n\n${f.content}`;
+    try{ const r=await s.json(prompt,{modelTier:state.settings.tier,cache:false}); notes=Array.isArray(r&&r.notes)?r.notes:[]; score=Number.isFinite(r&&r.score)?Math.max(0,Math.min(30,Math.round(r.score))):null; }
+    catch(e){ toast(errMsg(e)); noteAIError(e); ok=false; }
   }
   if(ok){
     state.comments=state.comments.filter(x=>!(x.fileId===f.id&&x.check===c.name));
-    notes.forEach(n=>{ if(!n||!n.quote) return; state.comments.push({id:uid(),fileId:f.id,check:c.name,quote:String(n.quote).slice(0,300),note:String(n.note||''),suggestion:n.suggestion?String(n.suggestion):''}); });
-    state.runs[c.id]=state.runs[c.id]||{}; state.runs[c.id][f.id]={count:notes.length,score,when:Date.now()}; state.checksDone++;
-    save(); renderComments(); showTab('comments'); toast(`${c.name}: ${notes.length} note${notes.length===1?'':'s'}`);
+    let made=0;
+    notes.forEach(n=>{ if(!n||!n.quote) return; const q=String(n.quote).slice(0,300); const pos=typeof n.pos==='number'?n.pos:f.content.indexOf(q); state.comments.push({id:uid(),fileId:f.id,check:c.name,quote:q,pos:pos<0?0:pos,note:String(n.note||''),suggestion:n.suggestion?String(n.suggestion):''}); made++; });
+    state.runs[c.id]=state.runs[c.id]||{}; state.runs[c.id][f.id]={count:made,score,mode,when:Date.now()}; state.checksDone++;
+    save(); renderComments(); showTab('comments'); toast(`${c.name}: ${made} note${made===1?'':'s'}${mode==='local'?' (offline pattern check)':''}`);
   }
   renderChecks(); renderSettings(); updateLandingCounter();
 }
 
 /* ---------- chat ---------- */
-async function sendChat(text){
-  const s=await ai(); if(!s){ toast('Chat needs the AI connection.'); return; }
-  if(chatBusy) return; chatBusy=true;
+function chatMessages(){
   const f=active(); const excerpt=f?f.content.slice(0,2500):'';
-  const preface=`You are the margin assistant inside a markdown editor for novelists. Be brief, concrete and specific to the text. Do not praise. Offer rewrites in the writer's own voice.\nOPEN FILE: ${f?f.name:'none'}\nSELECTED PASSAGE: ${chatSel.text?JSON.stringify(chatSel.text):'(none)'}\nCHAPTER EXCERPT (for context):\n${excerpt}\n\n---\nWRITER: ${text}`;
-  chat.push({role:'user',content:text}); const reply={role:'assistant',content:'',pending:true}; chat.push(reply); renderChat();
-  const msgs=chat.slice(0,-1).map((m,i)=>({role:m.role,content:i===0?preface:m.content}));
+  const sys=`You are the margin assistant inside a markdown editor for novelists. Be brief, concrete and specific to the text. Do not praise. Offer rewrites in the writer's own voice.${rulesBlock()}\nOPEN FILE: ${f?f.name:'none'}\nCHAPTER EXCERPT (for context):\n${excerpt}\n\n---`;
+  const turns=chat.filter(m=>!m.pending&&!m.error&&!m.failed&&!m.queued);
+  return turns.map((m,i)=>{ let c=m.content; if(m.role==='user'&&m.sel) c=`SELECTED PASSAGE: ${JSON.stringify(m.sel)}\n\n${c}`; if(i===0) c=sys+'\nWRITER: '+c; return {role:m.role,content:c}; });
+}
+async function sendChat(text,userMsg){
+  const s=await ai(); if(!s||aiDenied){ toast(aiDenied?'AI was not allowed for this page.':'Chat needs the AI connection.'); return; }
+  if(!userMsg){ userMsg={role:'user',content:text,sel:chatSel.text||''}; chat.push(userMsg); }
+  if(offline()){ userMsg.queued=true; renderChat(); enqueue('chat message',()=>{ userMsg.queued=false; return sendChat(text,userMsg); }); return; }
+  if(chatBusy){ userMsg.queued=true; renderChat(); queue.push({label:'chat',fn:()=>{ userMsg.queued=false; return sendChat(text,userMsg); }}); return; }
+  chatBusy=true;
+  const reply={role:'assistant',content:'',pending:true}; chat.push(reply); renderChat();
+  const msgs=chatMessages();
   try{ const r=await s(msgs,{modelTier:state.settings.tier,cache:false,onText:u=>{reply.content=u.text;renderChat();}}); reply.content=r.text; }
-  catch(e){ reply.content=errMsg(e); }
+  catch(e){ reply.error=true; userMsg.failed=true; reply.content=(e&&e.text?e.text+'\n\n':'')+errMsg(e); noteAIError(e); }
   reply.pending=false; chatBusy=false; renderChat();
+  if(queue.length&&!offline()) drainQueue();
 }
 
 /* ---------- export ---------- */
@@ -914,8 +1063,9 @@ const THEMES={
 function openExport(){ $('#exportFiles').innerHTML=state.files.map(f=>`<label><input type="checkbox" value="${f.id}" checked> ${esc(f.name)} <span class="muted num">${fmtN(words(f.content))}</span></label>`).join(''); $('#exportOut').hidden=true; $('#exportModal').hidden=false; }
 function compile(){
   const ids=$$('#exportFiles input:checked').map(i=>i.value); const files=state.files.filter(f=>ids.includes(f.id));
+  if(!files.length){ toast('Tick at least one file to export.'); return null; }
   const fmt=$('#exportFormat input:checked').value, theme=$('#exportTheme input:checked').value;
-  const base=state.projectName.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-')||'manuscript';
+  const base=state.projectName.replace(/[^\p{L}\p{N}\- ]+/gu,'').trim().replace(/\s+/g,'-')||'manuscript';
   if(fmt==='md') return {filename:base+'.md',data:files.map(f=>f.content.trim()).join('\n\n---\n\n')+'\n',mime:'text/markdown'};
   if(fmt==='txt') return {filename:base+'.txt',data:files.map(f=>stripMd(f.content).trim()).join('\n\n* * *\n\n')+'\n',mime:'text/plain'};
   const html=`<!doctype html>\n<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(state.projectName)}</title><style>${THEMES[theme]}</style></head><body>\n${files.map(f=>md(f.content)).join('\n<hr>\n')}\n</body></html>\n`;
@@ -923,21 +1073,32 @@ function compile(){
 }
 
 /* ---------- UI helpers ---------- */
-let toastT; function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; t.style.opacity='1'; clearTimeout(toastT); toastT=setTimeout(()=>{t.style.opacity='0'; setTimeout(()=>{t.hidden=true},250)},3200); }
+let toastT; function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; t.style.opacity='1'; clearTimeout(toastT); toastT=setTimeout(()=>{t.style.opacity='0'; setTimeout(()=>{t.hidden=true},250)},3600); }
+async function copyText(t,okMsg,onFail){ try{ if(!navigator.clipboard||!navigator.clipboard.writeText) throw new Error('no clipboard'); await navigator.clipboard.writeText(t); toast(okMsg||'Copied'); return true; }catch(e){ if(onFail) onFail(); else toast('Copy is blocked here. Select the text and copy it by hand.'); return false; } }
 function showTab(name){ $$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name)); ['checks','comments','chat','settings'].forEach(n=>$('#panel-'+n).hidden=n!==name); }
-function selectInEditor(q){ const f=active(); const pos=findQuote(f.content,q); if(!pos) return; const ed=$('#editor'); if(!$('#previewPane').hidden) togglePreview(false); ed.focus(); ed.setSelectionRange(pos.i,pos.i+pos.len); const lines=f.content.slice(0,pos.i).split('\n').length; const lh=parseFloat(getComputedStyle(ed).lineHeight)||28; $('#editorWrap').scrollTo({top:Math.max(0,lines*lh-160),behavior:'smooth'}); captureSel(); }
+// Replace a range of the textarea so that Ctrl+Z can undo it.
+function replaceRange(start,end,text){ const ed=$('#editor'); if(!$('#previewPane').hidden) togglePreview(false); ed.focus(); ed.setSelectionRange(start,end); let ok=false; try{ ok=document.execCommand('insertText',false,text); }catch(e){} if(!ok||ed.value.slice(start,start+text.length)!==text){ ed.setRangeText(text,start,end,'end'); ed.dispatchEvent(new Event('input',{bubbles:true})); } }
+function selectInEditor(q,hint){ const f=active(); if(!f) return false; const pos=findQuote(f.content,q,hint); if(!pos){ toast('That passage is no longer in the text.'); return false; } const ed=$('#editor'); if(!$('#previewPane').hidden) togglePreview(false); ed.focus(); ed.setSelectionRange(pos.i,pos.i+pos.len); const lines=f.content.slice(0,pos.i).split('\n').length; const lh=parseFloat(getComputedStyle(ed).lineHeight)||28; $('#editorWrap').scrollTo({top:Math.max(0,lines*lh-160),behavior:'smooth'}); captureSel(); return true; }
 function captureSel(){ const ed=$('#editor'); const t=ed.value.slice(ed.selectionStart,ed.selectionEnd); if(t.trim()){ chatSel={text:t,start:ed.selectionStart,end:ed.selectionEnd}; renderChat(); } renderCounts(); }
-function togglePreview(on){ const pv=$('#previewPane'), ed=$('#editor'); const want=on==null?pv.hidden:on; if(want){ pv.innerHTML=md(active().content); pv.hidden=false; ed.hidden=true; $('#btnPreview').classList.add('primary'); } else { pv.hidden=true; ed.hidden=false; $('#btnPreview').classList.remove('primary'); autosize(); } }
+function clearSel(){ chatSel={text:'',start:0,end:0}; renderChat(); }
+function togglePreview(on){ const pv=$('#previewPane'), ed=$('#editor'); const want=on==null?pv.hidden:on; const f=active(); if(want){ pv.innerHTML=f?md(f.content):'<p class="muted">No file open.</p>'; pv.hidden=false; ed.hidden=true; $('#btnPreview').classList.add('primary'); } else { pv.hidden=true; ed.hidden=false; $('#btnPreview').classList.remove('primary'); autosize(); } }
 function setZen(on){ document.documentElement.classList.toggle('zen',on); if(on){ $('#editor').focus(); } autosize(); }
 function updateLandingCounter(){ $('#checkCounter').textContent=`${fmtN(state.checksDone)} manuscript check${state.checksDone===1?'':'s'} performed in this browser`; }
-function scheduleSave(){ $('#saveState').textContent='editing…'; clearTimeout(saveTimer); saveTimer=setTimeout(async()=>{ save(); const f=active(); if(f&&handles.has(f.id)) await writeBack(f); $('#saveState').textContent=handles.has(f&&f.id)?'saved to disk':'saved'; },600); }
+let cmtTimer=null;
+function scheduleSave(){ setSaveState('editing…'); clearTimeout(saveTimer); saveTimer=setTimeout(flushSave,600); clearTimeout(cmtTimer); cmtTimer=setTimeout(renderComments,400); }
+async function flushSave(){ clearTimeout(saveTimer); saveTimer=null; const ok=save(); const f=active(); let onDisk=false; if(f&&handles.has(f.id)) onDisk=await writeBack(f); if(ok||onDisk) setSaveState(onDisk?'saved to disk':'saved'); }
 
 /* ---------- events ---------- */
 const ed=$('#editor');
-ed.addEventListener('input',()=>{ const f=active(); if(!f) return; f.content=ed.value; autosize(); renderCounts(); const li=$(`.files li[data-id="${f.id}"] .wc`); if(li) li.textContent=fmtN(words(f.content)); const tw=state.files.reduce((a,x)=>a+words(x.content),0), tc=state.files.reduce((a,x)=>a+x.content.length,0); $('#projectTotal').textContent=`${fmtN(tw)} words · ${fmtN(tc)} characters · ${state.files.length} file${state.files.length===1?'':'s'}`; scheduleSave(); });
+ed.addEventListener('input',()=>{ const f=active(); if(!f) return; f.content=ed.value; autosize(); renderCounts(); const li=$(`.files li[data-id="${f.id}"] .wc`); if(li) li.textContent=fmtN(words(f.content)); projectTotals(); scheduleSave(); });
 ed.addEventListener('select',captureSel); ed.addEventListener('mouseup',captureSel); ed.addEventListener('keyup',e=>{ if(e.shiftKey||e.key.startsWith('Arrow')) captureSel(); });
-document.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='s'){ e.preventDefault(); clearTimeout(saveTimer); save(); const f=active(); if(f&&handles.has(f.id)) writeBack(f); $('#saveState').textContent='saved'; toast('Saved'); } if(e.key==='Escape'){ if(document.documentElement.classList.contains('zen')) setZen(false); if(!$('#exportModal').hidden) $('#exportModal').hidden=true; } });
+document.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); flushSave().then(()=>toast(storageFailed&&!dirHandle?'Not saved: storage full':'Saved')); } if(e.key==='Escape'){ if(document.documentElement.classList.contains('zen')) setZen(false); if(!$('#exportModal').hidden) $('#exportModal').hidden=true; } });
 window.addEventListener('resize',autosize);
+// Flush pending saves when the tab is hidden or the page is left, so the last 600 ms of typing is not lost.
+const flushIfPending=()=>{ if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; save(); const f=active(); if(f&&handles.has(f.id)) writeBack(f); } };
+window.addEventListener('pagehide',flushIfPending); window.addEventListener('beforeunload',flushIfPending);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') flushIfPending(); else refreshFromDisk(true); });
+window.addEventListener('focus',()=>refreshFromDisk(true));
 
 $('#fileList').addEventListener('click',e=>{
   const li=e.target.closest('li'); if(!li) return; const id=li.dataset.id; const i=state.files.findIndex(f=>f.id===id); const f=state.files[i];
@@ -949,23 +1110,25 @@ $('#fileList').addEventListener('click',e=>{
     const done=()=>{ const v=inp.value.trim(); if(v&&v!==f.name){ if(handles.has(f.id)) toast('Renaming a file on disk is not supported here. The name changed in the project only.'); f.name=v; save(); } renderFiles(); renderEditor(); };
     inp.addEventListener('blur',done); inp.addEventListener('keydown',ev=>{ if(ev.key==='Enter') inp.blur(); if(ev.key==='Escape'){ inp.value=f.name; inp.blur(); } }); return; }
   if(act==='del'){ const tools=li.querySelector('.tools'); tools.innerHTML=`<span class="inline-confirm">delete? <button class="btn sm" data-act="delyes">yes</button><button class="btn sm ghost" data-act="delno">no</button></span>`; tools.style.display='flex'; return; }
-  if(act==='delyes'){ state.files.splice(i,1); state.comments=state.comments.filter(c=>c.fileId!==id); if(state.activeId===id) state.activeId=state.files[0]?.id; if(handles.has(id)) toast('Removed from the project. The file on disk was not deleted.'); save(); renderAll(); return; }
+  if(act==='delyes'){ state.files.splice(i,1); state.comments=state.comments.filter(c=>c.fileId!==id); handles.delete(id); disk.delete(id); if(!state.files.length) state.files.push({id:uid(),name:'00-untitled.md',content:'',color:null}); if(state.activeId===id) state.activeId=state.files[0].id; if(handles.size||dirHandle) toast('Removed from the project. The file on disk was not deleted.'); clearSel(); save(); renderAll(); return; }
   if(act==='delno'){ renderFiles(); return; }
-  if(id!==state.activeId){ state.activeId=id; save(); renderFiles(); renderEditor(); renderComments(); renderChecks(); }
+  if(id!==state.activeId){ flushIfPending(); state.activeId=id; clearSel(); save(); renderFiles(); renderEditor(); renderComments(); renderChecks(); refreshFromDisk(false); }
 });
 $('#btnNewFile').addEventListener('click',async()=>{
   const n=state.files.length; let name=String(n).padStart(2,'0')+'-untitled.md'; let k=1; while(state.files.some(f=>f.name===name)) name=String(n).padStart(2,'0')+'-untitled-'+(k++)+'.md';
-  const f={id:uid(),name,content:'# \n\n',color:null};
-  if(dirHandle){ try{ const h=await dirHandle.getFileHandle(name,{create:true}); handles.set(f.id,h); }catch(e){ toast('Could not create the file on disk: '+e.message); } }
-  state.files.push(f); state.activeId=f.id; save(); renderAll(); $('#editor').focus();
+  const f={id:uid(),name,content:'',color:null};
+  if(dirHandle){ try{ const h=await dirHandle.getFileHandle(name,{create:true}); handles.set(f.id,h); disk.set(f.id,{mtime:0,text:''}); }catch(e){ toast('Could not create the file on disk: '+e.message); } }
+  state.files.push(f); state.activeId=f.id; clearSel(); save(); renderAll(); $('#editor').focus();
 });
-$('#projectName').addEventListener('change',e=>{ state.projectName=e.target.value.trim()||'Untitled'; save(); renderFiles(); });
+$('#projectName').addEventListener('change',e=>{ state.projectName=e.target.value.trim()||'Untitled'; save(); renderFiles(); renderSettings(); });
 $('#btnFolder').addEventListener('click',addFolder);
+$('#sourceBox').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.id==='btnReconnect') reconnectFolder(); if(b.id==='btnLeaveFolder') leaveFolder(); });
 $('#heroFolder').addEventListener('click',()=>{ location.hash='#write'; setTimeout(addFolder,50); });
 $('#closingFolder').addEventListener('click',()=>{ location.hash='#write'; setTimeout(addFolder,50); });
 $$('#fontSeg button').forEach(b=>b.addEventListener('click',()=>{ state.settings.font=b.dataset.f; save(); renderEditor(); renderSettings(); }));
 $('#sizeUp').addEventListener('click',()=>{ state.settings.size=Math.min(26,state.settings.size+1); save(); renderEditor(); renderSettings(); });
 $('#sizeDown').addEventListener('click',()=>{ state.settings.size=Math.max(14,state.settings.size-1); save(); renderEditor(); renderSettings(); });
+$('#tierTop').addEventListener('change',e=>{ state.settings.tier=e.target.value; save(); renderSettings(); toast('Model tier: '+e.target.options[e.target.selectedIndex].text); });
 $('#btnZen').addEventListener('click',()=>setZen(true)); $('#zenExit').addEventListener('click',()=>setZen(false));
 $('#btnPreview').addEventListener('click',()=>togglePreview());
 $('#btnCheck').addEventListener('click',()=>showTab('checks'));
@@ -973,54 +1136,56 @@ $('#tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(
 $('#panel-checks').addEventListener('click',e=>{ const b=e.target.closest('button.run'); if(!b||b.disabled) return; runCheck(b.closest('.check-row').dataset.check); });
 $('#panel-comments').addEventListener('click',e=>{
   if(e.target.id==='dismissAll'){ const f=active(); state.comments=state.comments.filter(c=>c.fileId!==f.id); save(); renderComments(); return; }
-  const card=e.target.closest('.cmt'); if(!card) return; const c=state.comments.find(x=>x.id===card.dataset.id); const act=e.target.closest('button')?.dataset.act; const f=active();
+  const card=e.target.closest('.cmt'); if(!card) return; const c=state.comments.find(x=>x.id===card.dataset.id); if(!c) return; const act=e.target.closest('button')?.dataset.act; const f=active();
   if(act==='dismiss'){ state.comments=state.comments.filter(x=>x.id!==c.id); save(); renderComments(); return; }
-  if(act==='apply'){ const pos=findQuote(f.content,c.quote); if(!pos) return; f.content=f.content.slice(0,pos.i)+c.suggestion+f.content.slice(pos.i+pos.len); state.comments=state.comments.filter(x=>x.id!==c.id); save(); renderEditor(); renderFiles(); renderComments(); if(handles.has(f.id)) writeBack(f); toast('Applied'); return; }
-  if(act==='chat'){ selectInEditor(c.quote); chatSel={text:c.quote,start:0,end:0}; showTab('chat'); renderChat(); $('#chatInput').value=`About the ${c.check} note (“${c.note}”): how would you fix this?`; $('#chatInput').focus(); return; }
-  selectInEditor(c.quote);
+  if(act==='apply'){ const pos=findQuote(f.content,c.quote,c.pos); if(!pos){ renderComments(); return; } const delta=c.suggestion.length-pos.len; replaceRange(pos.i,pos.i+pos.len,c.suggestion); state.comments=state.comments.filter(x=>x.id!==c.id); state.comments.forEach(x=>{ if(x.fileId===f.id&&typeof x.pos==='number'&&x.pos>pos.i) x.pos+=delta; }); save(); renderFiles(); renderComments(); toast('Applied. Ctrl+Z undoes it.'); return; }
+  if(act==='chat'){ if(selectInEditor(c.quote,c.pos)) chatSel={text:c.quote,start:0,end:0}; showTab('chat'); renderChat(); $('#chatInput').value=`About the ${c.check} note (“${c.note}”): how would you fix this?`; $('#chatInput').focus(); return; }
+  selectInEditor(c.quote,c.pos);
 });
 $('#chatSend').addEventListener('click',()=>{ const v=$('#chatInput').value.trim(); if(!v) return; $('#chatInput').value=''; sendChat(v); });
 $('#chatInput').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); $('#chatSend').click(); } });
 $('#snippetChips').addEventListener('click',e=>{ const b=e.target.closest('[data-snip]'); if(!b) return; if(!chatSel.text){ toast('Select a passage in the editor first.'); return; } sendChat(state.snippets[+b.dataset.snip].prompt); });
 $('#chatLog').addEventListener('click',e=>{
   const ins=e.target.closest('[data-ins]'), cp=e.target.closest('[data-copy]');
-  if(ins){ const t=chat[+ins.dataset.ins].content; const f=active(); const ed=$('#editor'); const p=ed.selectionEnd||f.content.length; f.content=f.content.slice(0,p)+'\n\n'+t+'\n\n'+f.content.slice(p); renderEditor(); renderFiles(); scheduleSave(); toast('Inserted'); }
-  if(cp){ const t=chat[+cp.dataset.copy].content; navigator.clipboard.writeText(t).then(()=>toast('Copied')).catch(()=>toast('Copy is blocked here. Select the text and copy it by hand.')); }
+  if(ins){ const t=chat[+ins.dataset.ins].content; const f=active(); if(!f) return; const ed=$('#editor'); const p=ed.selectionEnd ?? ed.value.length; replaceRange(p,p,'\n\n'+t+'\n\n'); renderFiles(); toast('Inserted. Ctrl+Z undoes it.'); }
+  if(cp){ copyText(chat[+cp.dataset.copy].content,'Copied'); }
 });
 $('#panel-settings').addEventListener('input',e=>{
   const t=e.target;
   if(t.id==='setSize'){ state.settings.size=+t.value; $('#sizeVal').textContent=t.value; save(); renderEditor(); }
   if(t.id==='ccPrompt'){ $('#ccCount').textContent=t.value.length; }
+  if(t.id==='setRules'){ state.rules=t.value; $('#rulesCount').textContent=t.value.length; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ saveTimer=null; save(); },400); }
   const sn=t.closest('.snip'); if(sn){ state.snippets[+sn.dataset.i][t.dataset.k]=t.value; save(); renderChat(); }
 });
-$('#panel-settings').addEventListener('change',e=>{ const t=e.target; if(t.id==='setFont'){ state.settings.font=t.value; save(); renderEditor(); } if(t.id==='setTier'){ state.settings.tier=t.value; save(); } });
+$('#panel-settings').addEventListener('change',e=>{ const t=e.target; if(t.id==='setFont'){ state.settings.font=t.value; save(); renderEditor(); } if(t.id==='setTier'){ state.settings.tier=t.value; save(); renderEditor(); } });
 $('#panel-settings').addEventListener('click',e=>{
   const t=e.target.closest('button'); if(!t) return;
   if(t.id==='addSnip'){ state.snippets.push({name:'new',prompt:''}); save(); renderSettings(); renderChat(); }
   if(t.dataset.del!=null){ state.snippets.splice(+t.dataset.del,1); save(); renderSettings(); renderChat(); }
   if(t.id==='ccSave'){ const name=$('#ccName').value.trim(), prompt=$('#ccPrompt').value.trim(); if(!name||!prompt){ toast('Give the check a name and instructions.'); return; } state.customChecks.push({id:'cc_'+uid(),name,prompt}); save(); renderSettings(); renderChecks(); toast('Saved. Find it under Checks → Your checks.'); }
   if(t.dataset.ccdel){ state.customChecks=state.customChecks.filter(c=>c.id!==t.dataset.ccdel); save(); renderSettings(); renderChecks(); }
-  if(t.id==='resetSample'){ $('#resetConfirm').innerHTML=`<span class="inline-confirm">This replaces the in-browser project. <button class="btn sm" id="resetYes">Reset</button><button class="btn sm ghost" id="resetNo">Keep</button></span>`; }
-  if(t.id==='resetYes'){ handles.clear(); dirHandle=null; state=seed(); save(); renderAll(); toast('Sample novel restored'); }
+  if(t.id==='resetSample'){ $('#resetConfirm').innerHTML=`<span class="inline-confirm">This erases the files, comments and AI rules of ${state.source==='folder'?'this view (your folder on disk is untouched) ':'the in-browser project '}and loads the sample novel. Font, model tier, snippets and custom checks stay. <button class="btn sm" id="resetYes">Reset</button><button class="btn sm ghost" id="resetNo">Keep</button></span>`; }
+  if(t.id==='resetYes'){ handles.clear(); disk.clear(); dirHandle=null; savedDir=null; idb.del('dir'); state=seed({settings:state.settings,snippets:state.snippets,customChecks:state.customChecks,checksDone:state.checksDone}); chat=[]; clearSel(); save(); renderAll(); toast('Sample novel restored'); }
   if(t.id==='resetNo'){ $('#resetConfirm').innerHTML=''; }
 });
 $('#btnExport').addEventListener('click',openExport);
 $('#exportClose').addEventListener('click',()=>$('#exportModal').hidden=true);
 $('#exportModal').addEventListener('click',e=>{ if(e.target.id==='exportModal') e.target.hidden=true; });
-$('#exportCopy').addEventListener('click',()=>{ const r=compile(); navigator.clipboard.writeText(r.data).then(()=>toast('Copied '+r.filename)).catch(()=>{ const o=$('#exportOut'); o.hidden=false; o.value=r.data; o.focus(); o.select(); toast('Copy is blocked here. The output is shown below; copy it by hand.'); }); });
-$('#exportGo').addEventListener('click',async()=>{ const r=compile(); const d=await dl(); if(!d){ const o=$('#exportOut'); o.hidden=false; o.value=r.data; toast('Downloads are not available in this view. Use Copy, or select the output below.'); return; }
+$('#exportCopy').addEventListener('click',()=>{ const r=compile(); if(!r) return; copyText(r.data,'Copied '+r.filename,()=>{ const o=$('#exportOut'); o.hidden=false; o.value=r.data; o.focus(); o.select(); toast('Copy is blocked here. The output is shown below; copy it by hand.'); }); });
+$('#exportGo').addEventListener('click',async()=>{ const r=compile(); if(!r) return; const d=await dl(); if(!d){ const o=$('#exportOut'); o.hidden=false; o.value=r.data; toast('Downloads are not available in this view. Use Copy, or select the output below.'); return; }
   try{ await d.save({filename:r.filename,data:new Blob([r.data],{type:r.mime})}); toast('Saved '+r.filename); }catch(e){ if(e&&e.code==='declined') return; const o=$('#exportOut'); o.hidden=false; o.value=r.data; toast('Download failed ('+(e.code||e.message)+'). The output is shown below.'); } });
-$$('[data-scroll]').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); if(location.hash&&location.hash!=='#home'){ location.hash='#home'; } setTimeout(()=>document.getElementById(b.dataset.scroll)?.scrollIntoView({behavior:'smooth'}),30); }));
+$$('[data-scroll]').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); if(location.hash&&location.hash!=='#home') location.hash='#home'; setTimeout(()=>document.getElementById(b.dataset.scroll)?.scrollIntoView({behavior:'smooth'}),30); }));
 $$('a[data-tab]').forEach(a=>a.addEventListener('click',()=>setTimeout(()=>showTab(a.dataset.tab),30)));
 
 /* ---------- offline, landing checks, routing ---------- */
-const setOnline=()=>document.documentElement.classList.toggle('offline',navigator.onLine===false);
-window.addEventListener('online',setOnline); window.addEventListener('offline',setOnline); setOnline();
+const setOnline=()=>{ document.documentElement.classList.toggle('offline',offline()); setAIStatus(); };
+window.addEventListener('online',()=>{ setOnline(); drainQueue(); }); window.addEventListener('offline',setOnline);
 $('#landingChecks').innerHTML=CHECKS.map(([g,list])=>`<div><h4>${g} (${list.length})</h4><ul>${list.map(([id,name,d,local])=>`<li>${esc(name)}${local?' <span class="pill">offline</span>':''}</li>`).join('')}</ul></div>`).join('');
 updateLandingCounter();
-function route(){ const h=(location.hash||'#home').replace('#',''); const inApp=h==='write'; $('#home').hidden=inApp; $('#write').hidden=!inApp; document.documentElement.classList.toggle('in-app',inApp); if(!inApp) setZen(false); if(inApp){ renderEditor(); } else window.scrollTo(0,0); }
+function route(){ const h=(location.hash||'#home').replace('#',''); const inApp=h==='write'; $('#home').hidden=inApp; $('#write').hidden=!inApp; document.documentElement.classList.toggle('in-app',inApp); if(!inApp) setZen(false); if(inApp){ renderEditor(); } else { const target=h!=='home'&&document.getElementById(h); if(target) setTimeout(()=>target.scrollIntoView(),0); else window.scrollTo(0,0); } }
 window.addEventListener('hashchange',route);
-renderAll(); route();
+renderAll(); route(); setOnline();
 ai(); // resolves later; status updates when it does
+restoreFolderLink();
 })();
 </script>
