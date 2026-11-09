@@ -208,6 +208,7 @@ a.btn{text-decoration:none;color:inherit}
 .check-row:hover .run{opacity:1}
 .ai-note{padding:10px 12px;border-radius:8px;background:var(--accent-soft);font-size:.86em;margin-bottom:10px}
 .ai-note.warn{background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.scope{display:flex;gap:8px;align-items:center;font-size:.86em;padding:6px 8px;margin-bottom:8px;border:1px dashed var(--line-strong);border-radius:8px}
 .cmt{border:1px solid var(--line);border-left:3px solid var(--note-ink);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:var(--bg);font-size:.9em;cursor:pointer}
 .cmt.lost{border-left-color:var(--line-strong);opacity:.75}
 .cmt .ck{font-size:.76em;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--note-ink);display:flex;justify-content:space-between;gap:8px}
@@ -372,7 +373,7 @@ html.offline .offbar{display:block}
           <div class="note-card">
             <div class="who">Repetitions</div>
             <p>“sudden” appears twice within 1 word. Cut one, or make the echo deliberate.</p>
-            <div class="acts"><span class="btn sm primary">Apply</span><span class="btn sm">Chat</span><span class="btn sm ghost">Dismiss</span></div>
+            <div class="acts"><span class="btn sm">Chat</span><span class="btn sm ghost">Dismiss</span></div>
           </div>
         </div>
       </div>
@@ -505,9 +506,9 @@ html.offline .offbar{display:block}
     <section class="faq" id="faq">
       <h2>FAQ</h2>
       <details open><summary>Which browsers work, and what about mobile?</summary><p>Desktop Chrome, Edge or any Chromium browser for the full experience. Opening a folder from your disk relies on the File System Access API, which Firefox and Safari have not adopted. Everywhere else the editor still works with an in-browser project.</p></details>
-      <details><summary>Where do my files live?</summary><p>If you add a folder, in that folder: every save writes the .md file back to disk while the folder is connected. Browsers forget folder access when the page reloads, so you will see a one-click “Reconnect folder” button; until you press it, edits are kept in this browser and written to disk once you reconnect and save. If you use the in-browser project, files live in this browser's local storage, which never leaves your machine. Adding a folder does not erase the in-browser project; “leave folder” brings it back.</p></details>
+      <details><summary>Where do my files live?</summary><p>If you add a folder, in that folder: every save writes the .md file back to disk while the folder is connected. Browsers forget folder access when the page reloads, so you will see a one-click “Reconnect folder” button; until you press it, edits are kept in this browser, and on reconnect they are written to disk wherever the disk copy has not changed in the meantime. If both sides changed, your version is kept and written, and the disk copy is backed up in this browser. If you use the in-browser project, files live in this browser's local storage, which never leaves your machine. Adding a folder does not erase the in-browser project; “leave folder” brings it back.</p></details>
       <details><summary>What is markdown?</summary><p>A plain-text format that uses simple symbols for structure: a hash for a heading, asterisks for emphasis. Every file is an ordinary .md file you can open anywhere.</p></details>
-      <details><summary>Can I use it with Obsidian?</summary><p>Yes. Add the vault, or a folder inside it. Markdown and text files are read from the folder and its subfolders (hidden folders such as .obsidian are skipped; files show with their folder prefix). New files are created at the top level. While the folder is connected, saves go straight to the vault, and edits made in Obsidian are picked up when you come back to this tab. If a file changed in both places you are told, and your version wins on the next save.</p></details>
+      <details><summary>Can I use it with Obsidian?</summary><p>Yes. Add the vault, or a folder inside it. Markdown and text files are read from the folder and its subfolders, up to five levels deep and 500 files (hidden folders such as .obsidian are skipped; files show with their folder prefix). New files are created at the top level. While the folder is connected, files created or deleted in Obsidian appear and disappear here when you come back to the tab, saves go straight to the vault, and edits made in Obsidian are picked up when you come back to this tab. If a file changed in both places you are told, and your version wins on the next save.</p></details>
       <details><summary>Which checks work offline?</summary><p>Repetitions, Muscular verbs, Cliché &amp; dead language, Show don't tell, Pacing and Punctuation can run as plain pattern matching in the browser, so they work with no connection at all. When the AI is available they use it instead and read for the full meaning of the check. The other 23 checks, custom checks and chat need the AI connection; if you start one while offline it is queued and runs when you are back online.</p></details>
       <details><summary>Can I import from Scrivener, or use both?</summary><p>Import: compile your Scrivener project to EPUB (or Word) and use Import in the editor. Each chapter becomes a markdown file. Side by side: in Scrivener, sync the Draft folder to an external folder as plain text, then add that folder here. Rich formatting is lost either way, because the files are plain markdown.</p></details>
       <details><summary>Does it keep backups?</summary><p>No. Put the folder in Dropbox, Google Drive or OneDrive if you want version history. The in-browser project can be cleared by clearing site data, so export it now and then.</p></details>
@@ -639,7 +640,7 @@ html.offline .offbar{display:block}
 (function(){
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const STORE='marginalia.v1', STORE_BROWSER='marginalia.browser.v1', STORE_BACKUP='marginalia.folder-backup.v1';
+const STORE='marginalia.v1', STORE_BROWSER='marginalia.browser.v1', STORE_BACKUP='marginalia.folder-backup.v1', STORE_PREFS='marginalia.prefs.v1', STORE_FOLDER='marginalia.folder.';
 const uid=()=>Math.random().toString(36).slice(2,10);
 const COLORS=[null,'#4f7ee8','#3bb273','#e3a21a','#d86a6a','#9b6fd6'];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -649,13 +650,14 @@ const words=t=>{const m=t.match(/\S+/g);if(!m)return 0;let n=0;for(const w of m)
 const offline=()=>navigator.onLine===false;
 
 /* ---------- sentence model shared by the offline checks ---------- */
-const ABBR=/(?:\b(?:Mr|Mrs|Ms|Dr|St|Mt|Prof|Sr|Jr|vs|etc|No|Capt|Lt|Gen|Col|Rev|Hon)|\b\p{Lu}|\b[ap]\.m)\.["”’]?$/u;
+const ABBR=/(?:\b(?:Mr|Mrs|Ms|Dr|St|Mt|Prof|Sr|Jr|vs|etc|No|Capt|Lt|Gen|Col|Rev|Hon)|\b\p{Lu}|\b[ap]\.m|\b[ap])\.["”’]?$/u;
+const STRUCT=/^\s*(#|[-*+] |>|\d+\. |---)/;
 function sentences(text){ // exact substrings with offsets; skips markdown structure lines; merges after abbreviations
   const out=[]; const re=/[^.!?\n]+[.!?]*["”’]?/g; let m; let lineStart=0, nl=text.indexOf('\n');
   while((m=re.exec(text))){
     const s=m[0]; if(!s.trim()) continue;
     while(nl!==-1&&nl<m.index){ lineStart=nl+1; nl=text.indexOf('\n',lineStart); }
-    if(/^\s*(#|[-*+] |>|\d+\. |---)/.test(text.substr(lineStart,6))) continue;
+    if(STRUCT.test(text.substr(lineStart,6))) continue;
     const prev=out[out.length-1];
     if(prev && prev.i+prev.s.length===m.index && ABBR.test(prev.s)) prev.s+=s; else out.push({s,i:m.index});
   }
@@ -664,7 +666,8 @@ function sentences(text){ // exact substrings with offsets; skips markdown struc
 function sentenceFinder(text){
   const sents=sentences(text);
   return idx=>{ let lo=0,hi=sents.length-1; while(lo<=hi){ const mid=(lo+hi)>>1, x=sents[mid]; if(idx<x.i) hi=mid-1; else if(idx>=x.i+x.s.length) lo=mid+1; else { const lead=x.s.length-x.s.trimStart().length; return {quote:x.s.trim(),pos:x.i+lead}; } }
-    const a=Math.max(0,idx-40); return {quote:text.slice(a,idx+40).trim(),pos:a}; };
+    const ls=text.lastIndexOf('\n',idx)+1; if(STRUCT.test(text.substr(ls,6))) return null; // a heading, list or quote line: not prose, skip it
+    let a=Math.max(ls,idx-40), e=Math.min(text.length,idx+40); const nl=text.indexOf('\n',idx); if(nl>=0&&nl<e) e=nl; return {quote:text.slice(a,e).trim(),pos:a+(text.slice(a,e).length-text.slice(a,e).trimStart().length)}; };
 }
 const uniqByQuote=notes=>{const seen=new Set();return notes.filter(n=>n.quote&&!seen.has(n.quote)&&seen.add(n.quote))};
 const CAP=10, RAW=14;
@@ -679,15 +682,15 @@ const LOCAL={
   repetitions(text){
     const notes=[]; const re=/[\p{L}\p{M}'’]+/gu; let m; const last=new Map(); let idx=0;
     while((m=re.exec(text)) && notes.length<RAW){ const w=m[0].toLowerCase(); idx++;
-      if(w.length>=5 && !STOP.has(w)){ const p=last.get(w);
-        if(p && idx-p.idx<=40){ const span=text.slice(p.pos,m.index+m[0].length); if(span.length<=180) notes.push({quote:span,pos:p.pos,note:`“${w}” appears twice within ${idx-p.idx} words. Cut one, or make the echo deliberate.`}); }
+      if(w.length>=5 && !STOP.has(w) && !STRUCT.test(text.substr(text.lastIndexOf('\n',m.index)+1,6))){ const p=last.get(w);
+        if(p && idx-p.idx<=40){ const span=text.slice(p.pos,m.index+m[0].length); if(span.length<=180) notes.push({quote:span,pos:p.pos,note:`“${w}” appears twice within ${idx-p.idx} word${idx-p.idx===1?'':'s'}. Cut one, or make the echo deliberate.`}); }
         last.set(w,{idx,pos:m.index}); } }
     return uniqByQuote(notes).slice(0,CAP);
   },
   adverbs(text){
     const notes=[]; const at=sentenceFinder(text); const re=/\b(\p{L}{4,}ly)\b/gu; let m;
     while((m=re.exec(text)) && notes.length<RAW){ const w=m[1].toLowerCase(); if(LY_OK.has(w)) continue;
-      const s=at(m.index); notes.push({quote:s.quote,pos:s.pos,note:`“${m[1]}” props up the verb. A stronger verb usually does the adverb's job on its own.`}); }
+      const s=at(m.index); if(!s) continue; notes.push({quote:s.quote,pos:s.pos,note:`“${m[1]}” props up the verb. A stronger verb usually does the adverb's job on its own.`}); }
     return uniqByQuote(notes).slice(0,CAP);
   },
   cliches(text){
@@ -697,7 +700,7 @@ const LOCAL={
   },
   filter(text){
     const notes=[]; const at=sentenceFinder(text); let m; FILTER.lastIndex=0;
-    while((m=FILTER.exec(text)) && notes.length<RAW){ const s=at(m.index); notes.push({quote:s.quote,pos:s.pos,note:`“${m[1]}” is a filter word: it reports the perceiving instead of the thing perceived. Try showing the thing itself.`}); }
+    while((m=FILTER.exec(text)) && notes.length<RAW){ const s=at(m.index); if(!s) continue; notes.push({quote:s.quote,pos:s.pos,note:`“${m[1]}” is a filter word: it reports the perceiving instead of the thing perceived. Try showing the thing itself.`}); }
     return uniqByQuote(notes).slice(0,CAP);
   },
   pacing(text){
@@ -708,9 +711,9 @@ const LOCAL={
   },
   punctuation(text){
     const notes=[]; const at=sentenceFinder(text); let m;
-    const dbl=/\S {2,}\S/g; while((m=dbl.exec(text)) && notes.length<RAW){ const s=at(m.index); const q=s.quote.includes('  ')?s.quote:text.slice(m.index,m.index+m[0].length); notes.push({quote:q,pos:s.quote.includes('  ')?s.pos:m.index,note:'Double space between words.',suggestion:q.replace(/ {2,}/g,' ')}); }
-    const sp=/\w +[,.;:!?]/g; while((m=sp.exec(text)) && notes.length<RAW){ const s=at(m.index); notes.push({quote:s.quote,pos:s.pos,note:'Space before punctuation.',suggestion:s.quote.replace(/ +([,.;:!?])/g,'$1')}); }
-    const dots=/[^.]\.\.(?!\.)/g; while((m=dots.exec(text)) && notes.length<RAW){ const s=at(m.index); notes.push({quote:s.quote,pos:s.pos,note:'Two dots. An ellipsis has three, a full stop one.'}); }
+    const dbl=/\S {2,}\S/g; while((m=dbl.exec(text)) && notes.length<RAW){ const s=at(m.index); if(!s) continue; const q=s.quote.includes('  ')?s.quote:text.slice(m.index,m.index+m[0].length); notes.push({quote:q,pos:s.quote.includes('  ')?s.pos:m.index,note:'Double space between words.',suggestion:q.replace(/ {2,}/g,' ')}); }
+    const sp=/\w +[,.;:!?]/g; while((m=sp.exec(text)) && notes.length<RAW){ const s=at(m.index); if(!s) continue; notes.push({quote:s.quote,pos:s.pos,note:'Space before punctuation.',suggestion:s.quote.replace(/ +([,.;:!?])/g,'$1')}); }
+    const dots=/[^.]\.\.(?!\.)/g; while((m=dots.exec(text)) && notes.length<RAW){ const s=at(m.index); if(!s) continue; notes.push({quote:s.quote,pos:s.pos,note:'Two dots. An ellipsis has three, a full stop one.'}); }
     let off=0; for(const p of text.split(/\n\s*\n/)){ const straight=(p.match(/"/g)||[]).length, open=(p.match(/“/g)||[]).length, close=(p.match(/”/g)||[]).length;
       if(straight%2===1) notes.push({quote:p.slice(0,80),pos:off,note:'Odd number of straight quotes in this paragraph. A quotation may be left open.'});
       else if(open!==close) notes.push({quote:p.slice(0,80),pos:off,note:`Opening and closing curly quotes do not match in this paragraph (${open} open, ${close} close).`});
@@ -765,8 +768,7 @@ const DEFAULT_SNIPPETS=[
 ];
 function seed(keep){
   const k=keep||{};
-  return {projectName:'The Lamp Room',source:'browser',activeId:'f1',comments:[],rules:'',customChecks:k.customChecks||[],snippets:k.snippets||DEFAULT_SNIPPETS.map(s=>({...s})),
-    settings:k.settings||{font:'serif',size:18,tier:'default'},runs:{},checksDone:k.checksDone||0,
+  return {projectName:'The Lamp Room',source:'browser',activeId:'f1',comments:[],rules:'',customChecks:k.customChecks||[],runs:{},
     files:[
       {id:'f0',name:'00-outline.md',color:'#4f7ee8',content:`# Outline\n\n- **Ines**, 31, keeper of the Sayle Head light since her father's death.\n- **The ferryman**, Doran, who stops coming in the second week of November.\n- The missing wick is the first of several small thefts.\n- Low water reveals the wreck of the *Perseverance*.\n\n> Working question: who is tending the second light, and why does it only show when Ines sleeps?`},
       {id:'f1',name:'01-the-lamp-room.md',color:'#3bb273',content:`# Chapter One\n\nThe lamp room smelled of brass polish and old rain. Ines counted the wicks twice, the way her father had, and found one missing. Beyond the glass the harbour lights were coming on one by one, as if someone out there were answering.\n\nShe felt a sudden, sudden cold climb her arms, cold as ice, and knew that the missing wick was not an accident. Nobody came up here. Nobody had come up here in eleven years except her, and before her the old man, and before the old man a long line of other keepers who were all photographs now in the hallway downstairs, each of them holding the same brass key she carried on a bootlace around her neck, each of them looking very slightly to the left of the camera as if something in the room behind the photographer had just moved.\n\nShe went down.  The stairs turned seventy-one times, she had counted them as a girl and the number had never changed, and at the bottom the kitchen was exactly as she had left it: the kettle, the chair, the chart of the sound pinned at its four corners. She noticed the window was open.\n\n"Doran?" she said, quietly, to the empty room.\n\nThe sea said nothing. The sea rarely did. It was very good at that.`},
@@ -776,11 +778,17 @@ function seed(keep){
 }
 function readStore(key){ try{ const s=JSON.parse(localStorage.getItem(key)); if(s&&s.files) return s; }catch(e){} return null; }
 let state=readStore(STORE)||seed();
-state.runs=state.runs||{}; state.customChecks=state.customChecks||[]; state.snippets=state.snippets||DEFAULT_SNIPPETS.map(s=>({...s})); state.checksDone=state.checksDone||0; state.rules=state.rules||'';
+state.runs=state.runs||{}; state.customChecks=state.customChecks||[]; state.rules=state.rules||'';
+// App-wide preferences live apart from the project, so switching projects never changes them.
+let prefs=(()=>{ try{ const p=JSON.parse(localStorage.getItem(STORE_PREFS)); if(p&&p.settings) return p; }catch(e){} return {settings:state.settings||{font:'serif',size:18,tier:'default'},snippets:state.snippets||DEFAULT_SNIPPETS.map(s=>({...s})),checksDone:state.checksDone||0}; })();
+delete state.settings; delete state.snippets; delete state.checksDone;
+const hash=t=>{ let h=0x811c9dc5; for(let i=0;i<t.length;i++){ h^=t.charCodeAt(i); h=Math.imul(h,0x01000193); } return (h>>>0).toString(16); };
 let saveTimer=null, storageFailed=false;
 function save(){
+  try{ localStorage.setItem(STORE_PREFS,JSON.stringify(prefs)); }catch(e){}
+  if(state.source==='folder'&&state.projectName){ try{ localStorage.setItem(STORE_FOLDER+state.projectName,JSON.stringify({rules:state.rules,customChecks:state.customChecks,colors:Object.fromEntries(state.files.filter(f=>f.color).map(f=>[f.name,f.color]))})); }catch(e){} }
   try{ localStorage.setItem(STORE,JSON.stringify(state)); if(storageFailed){ storageFailed=false; setSaveState('saved'); } return true; }
-  catch(e){ if(!storageFailed) toast('Not saved: this browser\'s storage is full or blocked. Export your work, or add a folder so files save to disk.'); storageFailed=true; setSaveState('not saved: storage full'); return false; }
+  catch(e){ if(!storageFailed) toast(dirHandle?'Browser copy not saved: storage is full. Files still save to disk while the folder is connected.':'Not saved: this browser\'s storage is full or blocked. Export your work, or add a folder so files save to disk.'); storageFailed=true; setSaveState(dirHandle?'browser copy not saved (storage full)':'not saved: storage full'); return false; }
 }
 function setSaveState(t){ const el=$('#saveState'); if(el){ el.textContent=t; el.classList.toggle('bad',/not saved/.test(t)); } }
 const active=()=>state.files.find(f=>f.id===state.activeId)||state.files[0];
@@ -797,25 +805,38 @@ const idb={
 const handles=new Map(), parents=new Map(); let dirHandle=null; let savedDir=null; let pickerBlocked=false; // savedDir: handle remembered from a previous visit, not yet re-authorised
 const disk=new Map(); // file id -> {mtime, text} as last seen on disk (memory only)
 function stashBrowserProject(){ if(state.source==='browser'){ try{ localStorage.setItem(STORE_BROWSER,JSON.stringify(state)); }catch(e){} } }
-async function readFolder(dir,prefix='',depth=0,out=[]){ // recursive: subfolders too, hidden folders (.obsidian, .git, .trash) skipped, 500 files max
-  for await (const [name,h] of dir.entries()){ if(out.length>=500) break; if(name.startsWith('.')) continue;
-    if(h.kind==='directory'){ if(depth<5) await readFolder(h,prefix+name+'/',depth+1,out); }
-    else if(/\.(md|markdown|txt)$/i.test(name)){ const f=await h.getFile(); out.push({name:prefix+name,h,dir,text:await f.text(),mtime:f.lastModified}); } }
+const FOLDER_CAP=500, FOLDER_DEPTH=5;
+async function readFolder(dir,opts={},prefix='',depth=0,out=[]){ // recursive; hidden folders (.obsidian, .git, .trash) skipped; FOLDER_CAP files, FOLDER_DEPTH levels
+  for await (const [name,h] of dir.entries()){ if(out.length>=FOLDER_CAP){ out.truncated=true; break; } if(name.startsWith('.')) continue;
+    if(h.kind==='directory'){ if(depth<FOLDER_DEPTH) await readFolder(h,opts,prefix+name+'/',depth+1,out); else out.tooDeep=true; }
+    else if(/\.(md|markdown|txt)$/i.test(name)){ const e={name:prefix+name,h,dir}; if(opts.withText!==false){ const f=await h.getFile(); e.text=await f.text(); e.mtime=f.lastModified; } out.push(e); } }
   if(!prefix) out.sort((a,b)=>a.name.localeCompare(b.name)); return out;
 }
+function folderExtras(name){ try{ return JSON.parse(localStorage.getItem(STORE_FOLDER+name))||{}; }catch(e){ return {}; } }
+function capNotice(entries){ const w=[]; if(entries.truncated) w.push(`only the first ${FOLDER_CAP} files were opened`); if(entries.tooDeep) w.push(`folders deeper than ${FOLDER_DEPTH} levels were skipped`); return w.length?' Note: '+w.join('; ')+'.':''; }
 async function loadFolder(dir,{reconnect=false}={}){
   const entries=await readFolder(dir);
   const prev=new Map(reconnect?state.files.map(f=>[f.name,f]):[]);
-  let differed=0; handles.clear(); parents.clear(); disk.clear();
-  const files=entries.map(e=>{ const p=prev.get(e.name); const id=p?p.id:uid(); if(p&&p.content!==e.text) differed++; handles.set(id,e.h); parents.set(id,e.dir); disk.set(id,{mtime:e.mtime,text:e.text}); return {id,name:e.name,content:e.text,color:p?p.color:null}; });
-  if(reconnect&&differed){ try{ localStorage.setItem(STORE_BACKUP,JSON.stringify(state)); }catch(e){} }
+  const extras=reconnect?{}:folderExtras(dir.name); const colors=extras.colors||{};
+  let kept=0, conflicts=0; const backups=[]; handles.clear(); parents.clear(); disk.clear(); const toWrite=[];
+  const files=entries.map(e=>{ const p=prev.get(e.name); const id=p?p.id:uid(); const diskSig=hash(e.text); let content=e.text;
+    if(p&&p.content!==e.text){
+      if(p.sig===diskSig){ content=p.content; kept++; toWrite.push(id); }            // disk unchanged since last sync: keep the browser edits
+      else if(hash(p.content)===p.sig){ content=e.text; }                              // browser unchanged: take the disk version
+      else { content=p.content; conflicts++; backups.push({name:e.name,disk:e.text}); toWrite.push(id); } // both changed: keep yours, back up the disk copy
+    }
+    handles.set(id,e.h); parents.set(id,e.dir); disk.set(id,{mtime:e.mtime,text:e.text});
+    return {id,name:e.name,content,color:p?p.color:(colors[e.name]||null),sig:diskSig}; });
+  if(backups.length){ try{ localStorage.setItem(STORE_BACKUP,JSON.stringify({folder:dir.name,when:Date.now(),files:backups})); }catch(e){} }
   const keepIds=new Set(files.map(f=>f.id));
   dirHandle=dir; savedDir=null; state.source='folder'; state.projectName=dir.name; state.files=files;
+  if(!reconnect){ state.rules=extras.rules||''; state.customChecks=extras.customChecks||[]; }
   state.activeId=keepIds.has(state.activeId)?state.activeId:files[0]?.id;
   state.comments=reconnect?state.comments.filter(c=>keepIds.has(c.fileId)):[]; if(!reconnect) state.runs={};
   save(); renderAll();
-  if(reconnect) toast(differed?`Reconnected “${dir.name}”. ${differed} file${differed===1?'':'s'} differed from the browser copy; disk won, and the browser copy is kept as a backup.`:`Reconnected “${dir.name}”`);
-  else toast(files.length?`Opened “${dir.name}”: ${files.length} file${files.length===1?'':'s'}`:'No markdown files in that folder. Add one with + and it will be created there.');
+  for(const id of toWrite){ const f=state.files.find(x=>x.id===id); if(f) await writeBack(f); }
+  if(reconnect){ const parts=[]; if(kept) parts.push(`${kept} browser edit${kept===1?'':'s'} written to disk`); if(conflicts) parts.push(`${conflicts} file${conflicts===1?'':'s'} changed in both places: your version was kept and written to disk, the disk copy is backed up in this browser`); toast(`Reconnected “${dir.name}”${parts.length?'. '+parts.join('; '):''}.`+capNotice(entries),parts.length?7000:3600); }
+  else toast((files.length?`Opened “${dir.name}”: ${files.length} file${files.length===1?'':'s'}.`:'No markdown files in that folder. Add one with + and it will be created there.')+capNotice(entries),entries.truncated||entries.tooDeep?7000:3600);
 }
 async function addFolder(){
   if(!window.showDirectoryPicker){ toast('Opening a folder needs Chrome or Edge on desktop. Working with the in-browser project instead.'); return; }
@@ -828,7 +849,8 @@ async function addFolder(){
 async function renameOnDisk(f,newName){
   const h=handles.get(f.id), dir=parents.get(f.id); if(!h||!dir) return true;
   const oldBase=f.name.split('/').pop(), newBase=newName.split('/').pop(); if(f.name.slice(0,-oldBase.length)!==newName.slice(0,-newBase.length)){ toast('Moving a file between folders is not supported here. Rename it within its folder.'); return false; }
-  try{ if(typeof h.move==='function'){ await h.move(newBase); } else { const nh=await dir.getFileHandle(newBase,{create:true}); const w=await nh.createWritable(); await w.write(f.content); await w.close(); await dir.removeEntry(oldBase); handles.set(f.id,nh); } return true; }
+  try{ let exists=false; try{ await dir.getFileHandle(newBase); exists=true; }catch(e){} if(exists){ toast(`“${newBase}” already exists in that folder on disk. Choose another name.`); return false; }
+    if(typeof h.move==='function'){ await h.move(newBase); } else { const nh=await dir.getFileHandle(newBase,{create:true}); const w=await nh.createWritable(); await w.write(f.content); await w.close(); await dir.removeEntry(oldBase); handles.set(f.id,nh); } return true; }
   catch(e){ toast('Could not rename on disk: '+e.message); return false; }
 }
 async function deleteOnDisk(f){
@@ -841,25 +863,37 @@ async function reconnectFolder(){
   catch(e){ toast('Could not reconnect: '+(e.message||e.name)); }
 }
 function leaveFolder(){
-  const prev=readStore(STORE_BROWSER);
+  save(); const prev=readStore(STORE_BROWSER);
   handles.clear(); parents.clear(); disk.clear(); dirHandle=null; savedDir=null; idb.del('dir');
-  state=prev||seed({settings:state.settings,snippets:state.snippets,customChecks:state.customChecks,checksDone:state.checksDone}); state.source='browser';
-  save(); renderAll(); toast('Back to the in-browser project');
+  state=prev||seed(); state.source='browser'; state.runs=state.runs||{}; state.customChecks=state.customChecks||[]; state.rules=state.rules||'';
+  chat=[]; clearSel(); save(); renderAll(); toast('Back to the in-browser project');
 }
 async function writeBack(file){
   const h=handles.get(file.id); if(!h) return false;
-  try{ const w=await h.createWritable(); await w.write(file.content); await w.close(); const f=await h.getFile(); disk.set(file.id,{mtime:f.lastModified,text:file.content}); return true; }
+  try{ const w=await h.createWritable(); await w.write(file.content); await w.close(); const f=await h.getFile(); disk.set(file.id,{mtime:f.lastModified,text:file.content}); file.sig=hash(file.content); return true; }
   catch(e){ toast('Could not write '+file.name+': '+e.message); return false; }
 }
+let refreshing=false;
 async function refreshFromDisk(all){
-  if(!dirHandle) return;
-  const list=all?state.files:[active()].filter(Boolean); let changed=0;
-  for(const f of list){ const h=handles.get(f.id); const d=disk.get(f.id); if(!h||!d) continue;
-    try{ const file=await h.getFile(); if(file.lastModified===d.mtime) continue; const t=await file.text(); if(t===d.text){ d.mtime=file.lastModified; continue; }
-      if(f.content===d.text){ f.content=t; changed++; } else { toast(`${f.name} changed on disk and here. Keeping your version; it will overwrite the disk copy on the next save.`); }
-      d.mtime=file.lastModified; d.text=t; }catch(e){}
-  }
-  if(changed){ save(); renderFiles(); renderEditor(); renderComments(); toast(`${changed} file${changed===1?'':'s'} reloaded from disk`); }
+  if(!dirHandle||refreshing) return; refreshing=true;
+  try{
+    const list=all?state.files.slice():[active()].filter(Boolean); let changed=0, added=0, removed=0;
+    for(const f of list){ const h=handles.get(f.id); const d=disk.get(f.id); if(!h||!d) continue;
+      try{ const file=await h.getFile(); if(file.lastModified===d.mtime) continue; const t=await file.text(); if(t===d.text){ d.mtime=file.lastModified; continue; }
+        if(f.content===d.text){ f.content=t; f.sig=hash(t); changed++; } else { toast(`${f.name} changed on disk and here. Keeping your version; it will overwrite the disk copy on the next save.`); }
+        d.mtime=file.lastModified; d.text=t; }catch(e){}
+    }
+    if(all){ // files created or deleted on disk since the last look
+      try{ const entries=await readFolder(dirHandle,{withText:false}); const onDisk=new Map(entries.map(e=>[e.name,e])); const known=new Set(state.files.filter(f=>handles.has(f.id)).map(f=>f.name));
+        for(const e of entries){ if(known.has(e.name)) continue; const file=await e.h.getFile(); const text=await file.text(); const id=uid(); handles.set(id,e.h); parents.set(id,e.dir); disk.set(id,{mtime:file.lastModified,text}); state.files.push({id,name:e.name,content:text,color:null,sig:hash(text)}); added++; }
+        for(const f of state.files.slice()){ if(!handles.has(f.id)||onDisk.has(f.name)) continue; const d=disk.get(f.id); if(d&&f.content!==d.text){ toast(`${f.name} was deleted on disk but has unsaved edits here, so it stays in the project.`); continue; } state.files=state.files.filter(x=>x!==f); state.comments=state.comments.filter(c=>c.fileId!==f.id); handles.delete(f.id); parents.delete(f.id); disk.delete(f.id); removed++; }
+        if(added) state.files.sort((a,b)=>a.name.localeCompare(b.name));
+        if(removed&&!state.files.length) state.files.push({id:uid(),name:'00-untitled.md',content:'',color:null});
+        if(removed&&!state.files.some(f=>f.id===state.activeId)) state.activeId=state.files[0].id;
+      }catch(e){}
+    }
+    if(changed||added||removed){ save(); renderFiles(); renderEditor(); renderComments(); const parts=[]; if(changed) parts.push(`${changed} reloaded`); if(added) parts.push(`${added} new`); if(removed) parts.push(`${removed} removed`); toast(`Folder changed on disk: ${parts.join(', ')}.`); }
+  } finally{ refreshing=false; }
 }
 async function restoreFolderLink(){
   if(state.source!=='folder') return;
@@ -871,25 +905,26 @@ async function restoreFolderLink(){
 
 /* ---------- AI ---------- */
 let sampleNS=undefined, downloadsNS=undefined, aiDenied=false;
-async function ai(){ if(sampleNS!==undefined) return sampleNS; try{ sampleNS=window.claude&&window.claude.use?await window.claude.use('sample'):null; }catch(e){ sampleNS=null; } setAIStatus(); return sampleNS; }
+async function ai(){ if(sampleNS!==undefined) return sampleNS; try{ sampleNS=window.claude&&window.claude.use?await window.claude.use('sample'):null; }catch(e){ sampleNS=null; if(e&&e.code==='not_granted') aiDenied=true; } setAIStatus(); return sampleNS; }
 async function dl(){ if(downloadsNS!==undefined) return downloadsNS; try{ downloadsNS=window.claude&&window.claude.use?await window.claude.use('downloads'):null; }catch(e){ downloadsNS=null; } return downloadsNS; }
 const aiUsable=()=>!!sampleNS&&!aiDenied;
 function setAIStatus(){
   const el=$('#aiStatus'); if(!el) return; let cls='status', txt='AI: checking…';
-  if(sampleNS===null){ cls='status off'; txt='AI: offline checks only'; }
-  else if(aiDenied){ cls='status off'; txt='AI: not allowed for this page'; }
+  if(aiDenied){ cls='status off'; txt='AI: not allowed for this page'; }
+  else if(sampleNS===null){ cls='status off'; txt='AI: offline checks only'; }
   else if(sampleNS&&offline()){ cls='status off'; txt=`AI: waiting for connection${queue.length?` (${queue.length} queued)`:''}`; }
   else if(sampleNS){ cls='status ok'; txt='AI: ready'; }
   el.className=cls; el.innerHTML='<i></i>'+esc(txt);
   renderChecks(); renderChat();
 }
-const errMsg=e=>{ const c=e&&e.code; if(c==='not_granted') return 'AI was not allowed for this page. Offline checks still work.'; if(c==='rate_limited') return 'The AI is rate-limited right now. Try again in a minute.'; if(c==='prompt_too_large') return 'This chapter is too long for one check. Split it or select a passage.'; return 'AI request failed: '+((e&&e.message)||e); };
+const errMsg=e=>{ const c=e&&e.code; if(c==='not_granted') return 'AI was not allowed for this page. Offline checks still work.'; if(c==='rate_limited') return 'The AI is rate-limited right now. Try again in a minute.'; if(c==='prompt_too_large') return 'This chapter is too long for one request. Select a passage and tick “Check only the selected passage”, or split the file.'; return 'AI request failed: '+((e&&e.message)||e); };
 function noteAIError(e){ if(e&&e.code==='not_granted'){ aiDenied=true; setAIStatus(); } }
 
 /* offline queue: AI work asked for while offline runs when the connection returns */
 const queue=[];
 function enqueue(label,fn){ queue.push({label,fn}); toast(`You're offline. “${label}” will run when the connection is back.`); setAIStatus(); }
-async function drainQueue(){ while(queue.length&&!offline()){ const q=queue.shift(); setAIStatus(); try{ await q.fn(); }catch(e){} } setAIStatus(); }
+let draining=false;
+async function drainQueue(){ if(draining) return; draining=true; try{ while(queue.length&&!offline()){ const q=queue.shift(); setAIStatus(); try{ await q.fn(); }catch(e){} } } finally{ draining=false; setAIStatus(); } }
 
 /* ---------- rendering ---------- */
 function renderAll(){ renderFiles(); renderEditor(); renderChecks(); renderComments(); renderChat(); renderSettings(); renderSource(); }
@@ -914,11 +949,11 @@ function renderEditor(){
   const f=active(); const ed=$('#editor');
   ed.disabled=!f;
   if(!f){ ed.value=''; $('#fileName').textContent='No file'; renderCounts(); renderHighlights(); return; }
-  if(ed.value!==f.content) ed.value=f.content;
+  if(ed.value!==f.content) ed.value=f.content; lastValue=f.content;
   $('#fileName').textContent=f.name;
-  const sheet=$('#sheet'); sheet.className='sheet f-'+state.settings.font; ed.style.fontSize=state.settings.size+'px'; $('#previewPane').style.fontSize=state.settings.size+'px'; $('#hl').style.fontSize=state.settings.size+'px';
-  $$('#fontSeg button').forEach(b=>b.classList.toggle('on',b.dataset.f===state.settings.font));
-  const tt=$('#tierTop'); if(tt&&tt.value!==state.settings.tier) tt.value=state.settings.tier;
+  const sheet=$('#sheet'); sheet.className='sheet f-'+prefs.settings.font; ed.style.fontSize=prefs.settings.size+'px'; $('#previewPane').style.fontSize=prefs.settings.size+'px'; $('#hl').style.fontSize=prefs.settings.size+'px';
+  $$('#fontSeg button').forEach(b=>b.classList.toggle('on',b.dataset.f===prefs.settings.font));
+  const tt=$('#tierTop'); if(tt&&tt.value!==prefs.settings.tier) tt.value=prefs.settings.tier;
   autosize(); renderCounts(); renderHighlights();
   if(!$('#previewPane').hidden) $('#previewPane').innerHTML=md(f.content);
 }
@@ -926,12 +961,13 @@ function autosize(){ const ed=$('#editor'); ed.style.height='auto'; ed.style.hei
 function renderCounts(){ const f=active(); if(!f){ $('#fileCounts').textContent=''; $('#selCount').textContent=''; return; } $('#fileCounts').textContent=`${fmtN(words(f.content))} words · ${fmtN(f.content.length)} characters`; const ed=$('#editor'); const sel=ed.value.slice(ed.selectionStart,ed.selectionEnd); $('#selCount').textContent=sel?`selected: ${fmtN(words(sel))} words`:''; }
 function renderChecks(){
   const p=$('#panel-checks'); let h='';
-  if(sampleNS===null) h+=`<div class="ai-note warn">The AI connection is not available in this view, so only the six offline checks run. Open the page in claude.ai and allow it when asked to run all 29.</div>`;
-  else if(aiDenied) h+=`<div class="ai-note warn">AI was not allowed for this page, so only the six offline checks run. Reload the page to be asked again.</div>`;
+  if(aiDenied) h+=`<div class="ai-note warn">AI was not allowed for this page, so only the six offline checks run. Reload the page to be asked again.</div>`;
+  else if(sampleNS===null) h+=`<div class="ai-note warn">The AI connection is not available in this view, so only the six offline checks run. Open the page in claude.ai and allow it when asked to run all 29.</div>`;
   else if(sampleNS===undefined) h+=`<div class="ai-note">Connecting to the AI… offline checks are ready now.</div>`;
   else if(offline()) h+=`<div class="ai-note warn">You're offline. The six offline checks run now; any other check you start is queued until the connection is back.</div>`;
   else h+=`<div class="ai-note">Each check reads the open file and leaves its notes in Comments. The six marked “offline” use the AI when it is available and pattern matching when it is not. The first run asks you to allow the AI for this page.</div>`;
-  const f=active();
+  const f=active(); const rs=realSel();
+  if(rs) h+=`<label class="scope"><input type="checkbox" id="scopeSel" ${checkSelOnly?'checked':''}> Check only the selected passage (${fmtN(words(rs.text))} words)</label>`; else checkSelOnly=false;
   const row=c=>{ const r=f&&state.runs[c.id]&&state.runs[c.id][f.id]; const needsAI=!c.local&&!aiUsable();
     return `<div class="check-row" data-check="${c.id}"><span class="nm">${esc(c.name)} ${c.local?'<span class="pill" title="Works without the AI connection">offline</span>':''}</span>${r?`<span class="res" title="${r.mode==='local'?'pattern matching':'AI'}">${r.count} note${r.count===1?'':'s'}${r.score!=null?` · ${r.score}/30`:''}${r.mode==='local'?' · offline':''}</span>`:''}<button class="btn sm ${needsAI?'ghost':''} run" ${needsAI?'disabled title="Needs the AI connection"':''}>Run</button></div>`; };
   CHECKS.forEach(([g,list])=>{ h+=`<h4>${g}</h4>`; list.forEach(([id])=>h+=row(ALL_CHECKS.find(c=>c.id===id))); });
@@ -956,17 +992,18 @@ function renderComments(){
 }
 let chat=[]; let chatSel={text:'',start:0,end:0}; let chatBusy=false;
 function renderChat(){
-  $('#snippetChips').innerHTML=state.snippets.map((s,i)=>`<button class="chip" data-snip="${i}">${esc(s.name)}</button>`).join('');
+  $('#snippetChips').innerHTML=prefs.snippets.map((s,i)=>`<button class="chip" data-snip="${i}">${esc(s.name)}</button>`).join('');
   $('#chatSel').textContent=chatSel.text?`Selected: ${chatSel.text}`:'No passage selected. Select text in the editor to discuss it.';
   const log=$('#chatLog'); log.innerHTML=chat.map((m,i)=>`<div class="msg ${m.role==='user'?'user':'ai'}${m.error?' err':''}${m.queued?' queued':''}">${esc(m.content)||'Thinking…'}${m.role==='assistant'&&m.content&&!m.pending&&!m.error?`<div class="mini"><button class="btn sm" data-ins="${i}">Insert at cursor</button><button class="btn sm ghost" data-copy="${i}">Copy</button></div>`:''}</div>`).join('');
   log.scrollTop=log.scrollHeight;
   const note=$('#chatNote'); note.hidden=true;
-  if(sampleNS===null){ note.hidden=false; note.textContent='Chat needs the AI connection, which is not available in this view.'; }
-  else if(aiDenied){ note.hidden=false; note.textContent='AI was not allowed for this page, so chat is off. Reload the page to be asked again.'; }
+  if(aiDenied){ note.hidden=false; note.textContent='AI was not allowed for this page, so chat is off. Reload the page to be asked again.'; }
+  else if(sampleNS===null){ note.hidden=false; note.textContent='Chat needs the AI connection, which is not available in this view.'; }
+  else if(false){ note.hidden=false; note.textContent='AI was not allowed for this page, so chat is off. Reload the page to be asked again.'; }
   else if(sampleNS&&offline()){ note.hidden=false; note.textContent='You\'re offline. Messages you send now are queued and answered when the connection is back.'; }
 }
 function renderSettings(){
-  const p=$('#panel-settings'); const s=state.settings;
+  const p=$('#panel-settings'); const s=prefs.settings;
   p.innerHTML=`
   <h4>Editor</h4>
   <div class="field"><label for="setFont">Font</label><select id="setFont"><option value="serif" ${s.font==='serif'?'selected':''}>Serif (Newsreader)</option><option value="sans" ${s.font==='sans'?'selected':''}>Sans (Manrope)</option><option value="mono" ${s.font==='mono'?'selected':''}>Monospace (JetBrains Mono)</option></select></div>
@@ -976,7 +1013,7 @@ function renderSettings(){
   <h4>Project: ${esc(state.projectName)}</h4>
   <div class="field"><label for="setRules">AI rules for this project</label><textarea id="setRules" maxlength="2500" placeholder="British spelling. Past tense, close third person on Ines. Never suggest changing character names.">${esc(state.rules)}</textarea><div class="cnt"><span id="rulesCount">${state.rules.length}</span> / 2500</div><span class="muted" style="font-size:.85em">Sent with every check and chat message for this project. Stored with the project, so the in-browser project and each folder keep their own.</span></div>
   <h4>Chat snippets</h4>
-  <div id="snipList">${state.snippets.map((sn,i)=>`<div class="snip" data-i="${i}"><div><input type="text" value="${esc(sn.name)}" aria-label="Snippet name" data-k="name"><textarea aria-label="Snippet prompt" data-k="prompt">${esc(sn.prompt)}</textarea></div><button class="btn sm ghost" data-del="${i}" title="Remove">×</button></div>`).join('')}</div>
+  <div id="snipList">${prefs.snippets.map((sn,i)=>`<div class="snip" data-i="${i}"><div><input type="text" value="${esc(sn.name)}" aria-label="Snippet name" data-k="name"><textarea aria-label="Snippet prompt" data-k="prompt">${esc(sn.prompt)}</textarea></div><button class="btn sm ghost" data-del="${i}" title="Remove">×</button></div>`).join('')}</div>
   <button class="btn sm" id="addSnip">+ add snippet</button>
   <h4>File checks</h4>
   <div class="field"><label for="ccName">Check name</label><input type="text" id="ccName" placeholder="Sleep continuity"></div>
@@ -984,15 +1021,16 @@ function renderSettings(){
   <button class="btn sm primary" id="ccSave">Save check</button>
   ${state.customChecks.length?`<div style="margin-top:10px">${state.customChecks.map(c=>`<div class="check-row" data-cc="${c.id}"><span class="nm">${esc(c.name)}</span><button class="btn sm ghost" data-ccdel="${c.id}">Delete</button></div>`).join('')}</div>`:''}
   <h4>Data</h4>
-  <div class="field"><span class="muted">Checks run in this browser: <b class="num">${fmtN(state.checksDone)}</b></span></div>
-  <button class="btn sm" id="resetSample">Reset to the sample novel</button> <span id="resetConfirm"></span>`;
+  <div class="field"><span class="muted">Checks run in this browser: <b class="num">${fmtN(prefs.checksDone)}</b></span></div>
+  ${(()=>{ let b=null; try{ b=JSON.parse(localStorage.getItem(STORE_BACKUP)); }catch(e){} if(!b||!b.files||!b.files.length) return ''; return `<div class="field"><span>Disk copies backed up when “${esc(b.folder)}” was reconnected on ${new Date(b.when).toLocaleString()}: ${b.files.map(f=>esc(f.name)).join(', ')}.</span><div class="row" style="display:flex;gap:6px;margin-top:6px"><button class="btn sm" id="backupRestore">Add them as files</button><button class="btn sm ghost" id="backupDiscard">Discard backup</button></div></div>`; })()}
+  <button class="btn sm" id="resetSample">${state.source==='folder'?'Leave folder':'Reset to the sample novel'}</button> <span id="resetConfirm"></span>`;
 }
 
 /* ---------- markdown ---------- */
 // marked + DOMPurify when they loaded (cdnjs); a small built-in renderer otherwise.
 function inline(s){
   const codes=[]; s=esc(s).replace(/`([^`]+)`/g,(m,c)=>{ codes.push(c); return `\u0000${codes.length-1}\u0000`; });
-  s=s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,'$1').replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,'<a href="$2">$1</a>')
+  s=s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,'$1').replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,t,h)=>/^(https?:|mailto:|#|\/|\.{0,2}\/)|^[^:]*$/i.test(h)?`<a href="${h}">${t}</a>`:t)
      .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^\w*])\*([^*\n]+)\*(?!\w)/g,'$1<em>$2</em>').replace(/(^|[^\w_])_([^_\n]+)_(?!\w)/g,'$1<em>$2</em>');
   return s.replace(/\u0000(\d+)\u0000/g,(m,i)=>`<code>${codes[+i]}</code>`);
 }
@@ -1017,60 +1055,78 @@ function md(src){
   return mdFallback(src);
 }
 const stripMd=s=>s
+  .replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')
   .replace(/^#{1,6}\s+/gm,'')
   .replace(/^\s*[-*+]\s+/gm,'• ')
-  .replace(/^\s*([-*_])(\s*\1){2,}\s*$/gm,'* * *')
+  .replace(/^\s*([-*_])(\s*\1){2,}\s*$/gm,'\u0001HR\u0001')
   .replace(/^>\s?/gm,'')
   .replace(/!\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1')
   .replace(/`([^`]+)`/g,'$1')
   .replace(/\*\*([^*]+)\*\*|__([^_]+)__/g,(m,a,b)=>a||b)
-  .replace(/(^|[^\w*])\*([^*\n]+)\*(?!\w)/g,'$1$2').replace(/(^|[^\w_])_([^_\n]+)_(?!\w)/g,'$1$2');
+  .replace(/(^|[^\w*])\*([^*\n]+)\*(?!\w)/g,'$1$2').replace(/(^|[^\w_])_([^_\n]+)_(?!\w)/g,'$1$2')
+  .replace(/\u0001HR\u0001/g,'* * *');
 
 /* ---------- checks ---------- */
 const rulesBlock=()=>state.rules.trim()?`\nPROJECT RULES FROM THE WRITER (follow them):\n${state.rules.trim()}\n`:'';
-async function runCheck(id){
-  const f=active(); if(!f) return;
+let checkSelOnly=false; const realSel=()=>chatSel.text&&chatSel.end>chatSel.start&&$('#editor').value.slice(chatSel.start,chatSel.end)===chatSel.text?chatSel:null;
+async function runCheck(id,fileId){
+  const f=fileId?state.files.find(x=>x.id===fileId):active(); if(!f) return;
+  const sel=(!fileId||fileId===state.activeId)&&checkSelOnly?realSel():null; const scopeText=sel?sel.text:f.content, base=sel?sel.start:0;
   const custom=state.customChecks.find(c=>c.id===id); const c=custom?{id:custom.id,name:custom.name,desc:custom.prompt,local:null}:ALL_CHECKS.find(x=>x.id===id); if(!c) return;
   const useAI=aiUsable()&&!offline();
-  if(!c.local&&!useAI){ if(sampleNS&&!aiDenied&&offline()){ enqueue(c.name,()=>runCheck(id)); } else toast('This check needs the AI connection.'); return; }
+  if(!c.local&&!useAI){ if(sampleNS&&!aiDenied&&offline()){ const fid=f.id; enqueue(c.name,()=>runCheck(id,fid)); } else toast('This check needs the AI connection.'); return; }
   const row=$(`.check-row[data-check="${id}"] .run`); if(row){ row.disabled=true; row.textContent='Running…'; }
   let notes=[], score=null, ok=true, mode='ai';
-  if(c.local&&!useAI){ notes=c.local(f.content); score=Math.max(0,30-notes.length*3); mode='local'; }
+  if(c.local&&!useAI){ notes=c.local(scopeText).map(n=>({...n,pos:n.pos+base})); score=Math.max(0,30-notes.length*3); mode='local'; }
   else{
     const s=await ai();
-    const prompt=`You are a careful fiction editor running one specific check on a chapter of a novel.\nCHECK: ${c.name}\nWHAT TO LOOK FOR: ${c.desc}\n${rulesBlock()}\nRead the markdown chapter below. Return JSON only, no prose, in this exact shape:\n{"score": <integer 0-30, 30 meaning nothing to fix for this check>, "notes": [{"quote": "<a short excerpt copied VERBATIM from the chapter, max 120 characters, so it can be located by exact string match>", "note": "<what to improve and why, one or two sentences, addressed to the writer>", "suggestion": "<optional: the excerpt rewritten; omit if the fix is not a simple replacement>"}]}\nGive at most 8 notes, the most useful first. If the check does not apply, return an empty notes array and a high score.\n\nFILE: ${f.name}\n\n${f.content}`;
-    try{ const r=await s.json(prompt,{modelTier:state.settings.tier,cache:false}); notes=Array.isArray(r&&r.notes)?r.notes:[]; score=Number.isFinite(r&&r.score)?Math.max(0,Math.min(30,Math.round(r.score))):null; }
+    const prompt=`You are a careful fiction editor running one specific check on a chapter of a novel.\nCHECK: ${c.name}\nWHAT TO LOOK FOR: ${c.desc}\n${rulesBlock()}\nRead the markdown ${sel?'passage':'chapter'} below. Return JSON only, no prose, in this exact shape:\n{"score": <integer 0-30, 30 meaning nothing to fix for this check>, "notes": [{"quote": "<a short excerpt copied VERBATIM from the text, max 120 characters, so it can be located by exact string match>", "before": "<the 20 to 30 characters that come immediately before the quote, verbatim, so the right occurrence can be found>", "note": "<what to improve and why, one or two sentences, addressed to the writer>", "suggestion": "<optional: the excerpt rewritten; omit if the fix is not a simple replacement>"}]}\nGive at most 8 notes, the most useful first. If the check does not apply, return an empty notes array and a high score.\n\nFILE: ${f.name}${sel?' (selected passage only)':''}\n\n${scopeText}`;
+    try{ const r=await s.json(prompt,{modelTier:prefs.settings.tier,cache:false}); notes=Array.isArray(r&&r.notes)?r.notes:[]; score=Number.isFinite(r&&r.score)?Math.max(0,Math.min(30,Math.round(r.score))):null; }
     catch(e){ toast(errMsg(e)); noteAIError(e); ok=false; }
   }
   if(ok){
     state.comments=state.comments.filter(x=>!(x.fileId===f.id&&x.check===c.name));
-    let made=0;
-    notes.forEach(n=>{ if(!n||!n.quote) return; const q=String(n.quote).slice(0,300); const pos=typeof n.pos==='number'?n.pos:f.content.indexOf(q); state.comments.push({id:uid(),fileId:f.id,check:c.name,quote:q,pos:pos<0?0:pos,note:String(n.note||''),suggestion:n.suggestion?String(n.suggestion):''}); made++; });
-    state.runs[c.id]=state.runs[c.id]||{}; state.runs[c.id][f.id]={count:made,score,mode,when:Date.now()}; state.checksDone++;
-    save(); renderComments(); showTab('comments'); toast(`${c.name}: ${made} note${made===1?'':'s'}${mode==='local'?' (offline pattern check)':''}`);
+    let made=0, lost=0;
+    notes.forEach(n=>{ if(!n||!n.quote) return; const q=String(n.quote).slice(0,300); let pos;
+      if(typeof n.pos==='number') pos=n.pos; else { const p=anchorByContext(scopeText,q,n.before); if(p==null){ lost++; return; } pos=p+base; }
+      state.comments.push({id:uid(),fileId:f.id,check:c.name,quote:q,pos,note:String(n.note||''),suggestion:n.suggestion?String(n.suggestion):''}); made++; });
+    state.runs[c.id]=state.runs[c.id]||{}; state.runs[c.id][f.id]={count:made,score,mode,when:Date.now()}; prefs.checksDone++;
+    save(); renderComments(); showTab('comments'); toast(`${c.name}: ${made} note${made===1?'':'s'}${sel?' on the selection':''}${mode==='local'?' (offline pattern check)':''}${lost?`; ${lost} could not be matched to the text and ${lost===1?'was':'were'} dropped`:''}`);
   }
   renderChecks(); renderSettings(); updateLandingCounter();
 }
 
+// Pick the occurrence of q whose preceding text best matches the model's "before" context; null if q is not in the text at all.
+function anchorByContext(text,q,before){
+  const hits=[]; let i=text.indexOf(q); while(i>=0&&hits.length<64){ hits.push(i); i=text.indexOf(q,i+1); }
+  if(!hits.length){ const t=q.trim(); if(t&&t!==q) return anchorByContext(text,t,before); return null; }
+  if(hits.length===1||!before) return hits[0];
+  const b=String(before); let best=hits[0], bestScore=-1;
+  for(const h of hits){ const pre=text.slice(Math.max(0,h-b.length),h); let k=0; while(k<pre.length&&k<b.length&&pre[pre.length-1-k]===b[b.length-1-k]) k++; if(k>bestScore){ bestScore=k; best=h; } }
+  return best;
+}
+
 /* ---------- chat ---------- */
-function chatMessages(){
+function chatMessages(upTo){
   const f=active(); const excerpt=f?f.content.slice(0,2500):'';
   const sys=`You are the margin assistant inside a markdown editor for novelists. Be brief, concrete and specific to the text. Do not praise. Offer rewrites in the writer's own voice.${rulesBlock()}\nOPEN FILE: ${f?f.name:'none'}\nCHAPTER EXCERPT (for context):\n${excerpt}\n\n---`;
-  const turns=chat.filter(m=>!m.pending&&!m.error&&!m.failed&&!m.queued);
+  const end=chat.indexOf(upTo); const turns=chat.slice(0,end<0?chat.length:end+1).filter(m=>!m.pending&&!m.error&&!m.failed&&!m.queued);
   return turns.map((m,i)=>{ let c=m.content; if(m.role==='user'&&m.sel) c=`SELECTED PASSAGE: ${JSON.stringify(m.sel)}\n\n${c}`; if(i===0) c=sys+'\nWRITER: '+c; return {role:m.role,content:c}; });
 }
+const chatPending=[]; // messages waiting for the current reply to finish; sent one at a time, in order
 async function sendChat(text,userMsg){
   const s=await ai(); if(!s||aiDenied){ toast(aiDenied?'AI was not allowed for this page.':'Chat needs the AI connection.'); return; }
   if(!userMsg){ userMsg={role:'user',content:text,sel:chatSel.text||''}; chat.push(userMsg); }
-  if(offline()){ userMsg.queued=true; renderChat(); enqueue('chat message',()=>{ userMsg.queued=false; return sendChat(text,userMsg); }); return; }
-  if(chatBusy){ userMsg.queued=true; renderChat(); queue.push({label:'chat',fn:()=>{ userMsg.queued=false; return sendChat(text,userMsg); }}); return; }
-  chatBusy=true;
-  const reply={role:'assistant',content:'',pending:true}; chat.push(reply); renderChat();
-  const msgs=chatMessages();
-  try{ const r=await s(msgs,{modelTier:state.settings.tier,cache:false,onText:u=>{reply.content=u.text;renderChat();}}); reply.content=r.text; }
+  if(offline()){ userMsg.queued=true; renderChat(); enqueue('chat message',()=>sendChat(text,userMsg)); return; }
+  if(chatBusy){ userMsg.queued=true; renderChat(); if(!chatPending.some(p=>p.msg===userMsg)) chatPending.push({text,msg:userMsg}); return; }
+  userMsg.queued=false; chatBusy=true;
+  const reply={role:'assistant',content:'',pending:true}; chat.splice(chat.indexOf(userMsg)+1,0,reply); renderChat();
+  const msgs=chatMessages(userMsg);
+  try{ const r=await s(msgs,{modelTier:prefs.settings.tier,cache:false,onText:u=>{reply.content=u.text;renderChat();}}); reply.content=r.text; }
   catch(e){ reply.error=true; userMsg.failed=true; reply.content=(e&&e.text?e.text+'\n\n':'')+errMsg(e); noteAIError(e); }
   reply.pending=false; chatBusy=false; renderChat();
-  if(queue.length&&!offline()) drainQueue();
+  const next=chatPending.shift(); if(next&&!offline()) setTimeout(()=>sendChat(next.text,next.msg),0);
+  else if(queue.length&&!offline()) setTimeout(drainQueue,0);
 }
 
 /* ---------- zip (store) writer and reader ---------- */
@@ -1115,7 +1171,7 @@ function buildEpub(files,theme){
   const id='urn:uuid:'+([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
   const title=state.projectName, mod=new Date().toISOString().replace(/\.\d+Z$/,'Z');
   const css=THEMES[theme].replace(/max-width:[^;]+;|margin:[^;]+;|padding:[^;]+;/g,'');
-  const chapters=files.map((f,i)=>({href:`ch${String(i+1).padStart(3,'0')}.xhtml`,id:`ch${i+1}`,title:chapterTitle(f),body:toXhtmlBody(md(f.content))}));
+  const chapters=files.map((f,i)=>({href:`ch${String(i+1).padStart(3,'0')}.xhtml`,id:`ch${i+1}`,title:chapterTitle(f),body:toXhtmlBody(md(f.content).replace(/<img\b[^>]*\balt="([^"]*)"[^>]*>/gi,'$1').replace(/<img\b[^>]*>/gi,''))}));
   const xhtml=(t,body)=>`<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>${xesc(t)}</title><link rel="stylesheet" type="text/css" href="style.css"/></head><body>${body}</body></html>`;
   const nav=xhtml(title,`<nav epub:type="toc" id="toc"><h1>Contents</h1><ol>${chapters.map(c=>`<li><a href="${c.href}">${xesc(c.title)}</a></li>`).join('')}</ol></nav>`);
   const opf=`<?xml version="1.0" encoding="utf-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="bookid">${id}</dc:identifier><dc:title>${xesc(title)}</dc:title><dc:language>en</dc:language><meta property="dcterms:modified">${mod}</meta></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="css" href="style.css" media-type="text/css"/>${chapters.map(c=>`<item id="${c.id}" href="${c.href}" media-type="application/xhtml+xml"/>`).join('')}</manifest><spine>${chapters.map(c=>`<itemref idref="${c.id}"/>`).join('')}</spine></package>`;
@@ -1202,7 +1258,9 @@ async function importDocx(buf){
   const doc=new DOMParser().parseFromString(utf8(xml),'application/xml'); const W='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
   const paras=[]; const body=doc.getElementsByTagNameNS(W,'body')[0]; if(!body) throw new Error('empty Word document');
   for(const p of body.getElementsByTagNameNS(W,'p')){
-    const style=p.getElementsByTagNameNS(W,'pStyle')[0]?.getAttributeNS(W,'val')||p.getElementsByTagNameNS(W,'pStyle')[0]?.getAttribute('w:val')||'';
+    let inTable=false; for(let a=p.parentNode;a&&a!==body;a=a.parentNode){ if(a.localName==='tbl'){ inTable=true; break; } } if(inTable) continue; // tables are dropped
+    const pPr=p.getElementsByTagNameNS(W,'pPr')[0]; const style=pPr?.getElementsByTagNameNS(W,'pStyle')[0]?.getAttributeNS(W,'val')||pPr?.getElementsByTagNameNS(W,'pStyle')[0]?.getAttribute('w:val')||'';
+    const listed=!!(pPr&&pPr.getElementsByTagNameNS(W,'numPr')[0])||/^List/i.test(style); const numbered=listed&&/Number/i.test(style);
     let text='', cur=null;
     const push=(t,b,i)=>{ if(!t) return; if(cur&&cur.b===b&&cur.i===i) cur.t+=t; else { if(cur) text+=wrap(cur); cur={t,b,i}; } };
     const wrap=r=>{ let t=r.t; if(!t.trim()) return t; const lead=t.match(/^\s*/)[0], trail=t.match(/\s*$/)[0]; t=t.trim(); if(r.b&&r.i) t=`***${t}***`; else if(r.b) t=`**${t}**`; else if(r.i) t=`*${t}*`; return lead+t+trail; };
@@ -1213,6 +1271,7 @@ async function importDocx(buf){
     else if(/Quote/i.test(style)&&text) paras.push('> '+text);
     else if(/^\*\s*\*\s*\*$|^#$/.test(text)) paras.push('---');
     else if(/^[•·\-–]\s+/.test(text)) paras.push('- '+text.replace(/^[•·\-–]\s+/,''));
+    else if(listed&&text) paras.push((numbered?'1. ':'- ')+text);
     else if(text) paras.push(text);
   }
   if(!paras.length) throw new Error('no text found in this Word document');
@@ -1221,21 +1280,21 @@ async function importDocx(buf){
   const parts=mdText.split(/^(?=# )/m).filter(s=>s.trim()); return parts.map((s,i)=>({title:firstHeading(s)||`Chapter ${i+1}`,content:s.trim()}));
 }
 async function importFiles(fileList){
-  const added=[]; let failed=0;
+  const added=[], reasons=[]; let failed=0;
   for(const file of fileList){
     try{ const ext=(file.name.match(/\.([^.]+)$/)||[])[1]?.toLowerCase(); let chapters;
       if(ext==='epub') chapters=await importEpub(await file.arrayBuffer());
       else if(ext==='docx') chapters=await importDocx(await file.arrayBuffer());
       else if(/^(md|markdown|txt)$/.test(ext)) chapters=[{title:file.name.replace(/\.[^.]+$/,''),content:await file.text(),keepName:file.name}];
-      else { toast(`${file.name}: only .epub, .docx, .md and .txt can be imported.`); failed++; continue; }
-      for(const ch of chapters){ const n=state.files.length+added.length; let name=ch.keepName||`${String(n).padStart(2,'0')}-${slug(ch.title)}.md`; let k=2; const base=name.replace(/\.md$/,''); while(state.files.some(f=>f.name===name)||added.some(f=>f.name===name)) name=`${base}-${k++}.md`;
+      else { reasons.push(`${file.name}: only .epub, .docx, .md and .txt can be imported`); failed++; continue; }
+      for(const ch of chapters){ const n=state.files.length+added.length; let name=ch.keepName||`${String(n).padStart(2,'0')}-${slug(ch.title)}.md`; let k=2; const ext=(name.match(/\.[^.]+$/)||['.md'])[0]; const base=name.slice(0,name.length-ext.length); while(state.files.some(f=>f.name===name)||added.some(f=>f.name===name)) name=`${base}-${k++}${ext}`;
         const f={id:uid(),name,content:ch.content,color:null};
         if(dirHandle){ try{ const h=await dirHandle.getFileHandle(name,{create:true}); const w=await h.createWritable(); await w.write(f.content); await w.close(); handles.set(f.id,h); parents.set(f.id,dirHandle); const df=await h.getFile(); disk.set(f.id,{mtime:df.lastModified,text:f.content}); }catch(e){ toast('Could not write '+name+' to disk: '+e.message); } }
         added.push(f); }
-    }catch(e){ failed++; toast(`${file.name}: ${e.message||e}`); }
+    }catch(e){ failed++; reasons.push(`${file.name}: ${e.message||e}`); }
   }
   if(added.length){ state.files.push(...added); state.activeId=added[0].id; clearSel(); save(); renderAll(); }
-  if(added.length||failed) toast(`Imported ${added.length} file${added.length===1?'':'s'}${failed?`, ${failed} failed`:''}${dirHandle?' and wrote them to the folder':''}.`);
+  if(added.length||failed) toast(`Imported ${added.length} file${added.length===1?'':'s'}${dirHandle&&added.length?' and wrote them to the folder':''}${failed?`. ${failed} failed: ${reasons.join('; ')}`:'.'}`,failed?8000:3600);
 }
 
 /* ---------- inline highlights behind the textarea ---------- */
@@ -1271,24 +1330,32 @@ function compile(){
 }
 
 /* ---------- UI helpers ---------- */
-let toastT; function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; t.style.opacity='1'; clearTimeout(toastT); toastT=setTimeout(()=>{t.style.opacity='0'; setTimeout(()=>{t.hidden=true},250)},3600); }
+let toastT; function toast(msg,ms){ const t=$('#toast'); t.textContent=msg; t.hidden=false; t.style.opacity='1'; clearTimeout(toastT); toastT=setTimeout(()=>{t.style.opacity='0'; setTimeout(()=>{t.hidden=true},250)},ms||3600); }
 async function copyText(t,okMsg,onFail){ try{ if(!navigator.clipboard||!navigator.clipboard.writeText) throw new Error('no clipboard'); await navigator.clipboard.writeText(t); toast(okMsg||'Copied'); return true; }catch(e){ if(onFail) onFail(); else toast('Copy is blocked here. Select the text and copy it by hand.'); return false; } }
 function showTab(name){ $$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name)); ['checks','comments','chat','settings'].forEach(n=>$('#panel-'+n).hidden=n!==name); }
 // Replace a range of the textarea so that Ctrl+Z can undo it.
 function replaceRange(start,end,text){ const ed=$('#editor'); if(!$('#previewPane').hidden) togglePreview(false); ed.focus(); ed.setSelectionRange(start,end); let ok=false; try{ ok=document.execCommand('insertText',false,text); }catch(e){} if(!ok||ed.value.slice(start,start+text.length)!==text){ ed.setRangeText(text,start,end,'end'); ed.dispatchEvent(new Event('input',{bubbles:true})); } }
 function selectInEditor(q,hint){ const f=active(); if(!f) return false; const pos=findQuote(f.content,q,hint); if(!pos){ toast('That passage is no longer in the text.'); return false; } const ed=$('#editor'); if(!$('#previewPane').hidden) togglePreview(false); ed.focus(); ed.setSelectionRange(pos.i,pos.i+pos.len); const lines=f.content.slice(0,pos.i).split('\n').length; const lh=parseFloat(getComputedStyle(ed).lineHeight)||28; $('#editorWrap').scrollTo({top:Math.max(0,lines*lh-160),behavior:'smooth'}); captureSel(); return true; }
-function captureSel(){ const ed=$('#editor'); const t=ed.value.slice(ed.selectionStart,ed.selectionEnd); if(t.trim()){ chatSel={text:t,start:ed.selectionStart,end:ed.selectionEnd}; renderChat(); } renderCounts(); }
+function captureSel(){ const ed=$('#editor'); const t=ed.value.slice(ed.selectionStart,ed.selectionEnd); if(t.trim()){ chatSel={text:t,start:ed.selectionStart,end:ed.selectionEnd}; renderChat(); if(!$('#panel-checks').hidden) renderChecks(); } renderCounts(); }
 function clearSel(){ chatSel={text:'',start:0,end:0}; renderChat(); }
 function togglePreview(on){ const pv=$('#previewPane'), ed=$('#editor'); const want=on==null?pv.hidden:on; const f=active(); if(want){ pv.innerHTML=f?md(f.content):'<p class="muted">No file open.</p>'; pv.hidden=false; ed.hidden=true; $('#hl').hidden=true; $('#btnPreview').classList.add('primary'); } else { pv.hidden=true; ed.hidden=false; $('#hl').hidden=false; $('#btnPreview').classList.remove('primary'); autosize(); } }
 function setZen(on){ document.documentElement.classList.toggle('zen',on); if(on){ $('#editor').focus(); } autosize(); }
-function updateLandingCounter(){ $('#checkCounter').textContent=`${fmtN(state.checksDone)} manuscript check${state.checksDone===1?'':'s'} performed in this browser`; }
-let cmtTimer=null;
+function updateLandingCounter(){ $('#checkCounter').textContent=`${fmtN(prefs.checksDone)} manuscript check${prefs.checksDone===1?'':'s'} performed in this browser`; }
+let cmtTimer=null, rulesTimer=null;
 function scheduleSave(){ setSaveState('editing…'); clearTimeout(saveTimer); saveTimer=setTimeout(flushSave,600); clearTimeout(cmtTimer); cmtTimer=setTimeout(renderComments,400); }
 async function flushSave(){ clearTimeout(saveTimer); saveTimer=null; const ok=save(); const f=active(); let onDisk=false; if(f&&handles.has(f.id)) onDisk=await writeBack(f); if(ok||onDisk) setSaveState(onDisk?'saved to disk':'saved'); }
 
 /* ---------- events ---------- */
 const ed=$('#editor');
-ed.addEventListener('input',()=>{ const f=active(); if(!f) return; f.content=ed.value; autosize(); renderCounts(); if(hlRanges.length) renderHighlights(); const li=$(`.files li[data-id="${f.id}"] .wc`); if(li) li.textContent=fmtN(words(f.content)); projectTotals(); scheduleSave(); });
+let lastValue=null, countTimer=null, hlTimer=null;
+function shiftComments(fileId,start,removed,added){ if(removed===added&&removed===0) return; const delta=added-removed; for(const c of state.comments){ if(c.fileId!==fileId||typeof c.pos!=='number') continue; if(c.pos>=start+removed) c.pos+=delta; else if(c.pos>start) c.pos=start; } }
+ed.addEventListener('input',()=>{ const f=active(); if(!f) return; const nv=ed.value, old=lastValue==null?f.content:lastValue;
+  if(old!==nv){ let p=0; const max=Math.min(old.length,nv.length); while(p<max&&old.charCodeAt(p)===nv.charCodeAt(p)) p++; let sfx=0; while(sfx<max-p&&old.charCodeAt(old.length-1-sfx)===nv.charCodeAt(nv.length-1-sfx)) sfx++; shiftComments(f.id,p,old.length-p-sfx,nv.length-p-sfx); }
+  f.content=nv; lastValue=nv;
+  if(ed.scrollHeight>ed.clientHeight) ed.style.height=ed.scrollHeight+'px';
+  clearTimeout(countTimer); countTimer=setTimeout(()=>{ autosize(); renderCounts(); const li=$(`.files li[data-id="${f.id}"] .wc`); if(li) li.textContent=fmtN(words(f.content)); projectTotals(); },250);
+  if(hlRanges.length){ clearTimeout(hlTimer); hlTimer=setTimeout(renderHighlights,120); }
+  scheduleSave(); });
 ed.addEventListener('select',captureSel); ed.addEventListener('mouseup',captureSel); ed.addEventListener('keyup',e=>{ if(e.shiftKey||e.key.startsWith('Arrow')) captureSel(); });
 document.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){ e.preventDefault(); flushSave().then(()=>toast(storageFailed&&!dirHandle?'Not saved: storage full':'Saved')); } if(e.key==='Escape'){ if(document.documentElement.classList.contains('zen')) setZen(false); if(!$('#exportModal').hidden) $('#exportModal').hidden=true; } });
 window.addEventListener('resize',autosize);
@@ -1302,8 +1369,8 @@ $('#fileList').addEventListener('click',e=>{
   const li=e.target.closest('li'); if(!li) return; const id=li.dataset.id; const i=state.files.findIndex(f=>f.id===id); const f=state.files[i];
   const act=e.target.closest('button')?.dataset.act;
   if(e.target.classList.contains('dot')){ f.color=COLORS[(COLORS.indexOf(f.color)+1)%COLORS.length]; save(); renderFiles(); return; }
-  if(act==='up'&&i>0){ state.files.splice(i,1); state.files.splice(i-1,0,f); save(); renderFiles(); return; }
-  if(act==='down'&&i<state.files.length-1){ state.files.splice(i,1); state.files.splice(i+1,0,f); save(); renderFiles(); return; }
+  if(act==='up'){ if(i>0){ state.files.splice(i,1); state.files.splice(i-1,0,f); save(); renderFiles(); } return; }
+  if(act==='down'){ if(i<state.files.length-1){ state.files.splice(i,1); state.files.splice(i+1,0,f); save(); renderFiles(); } return; }
   if(act==='ren'){ const span=li.querySelector('.name'); span.innerHTML=`<input type="text" value="${esc(f.name)}" aria-label="File name">`; const inp=span.querySelector('input'); inp.focus(); inp.select();
     const done=async()=>{ const v=inp.value.trim(); if(v&&v!==f.name){ if(state.files.some(x=>x!==f&&x.name===v)){ toast('A file with that name already exists.'); } else if(await renameOnDisk(f,v)){ f.name=v; save(); if(handles.has(f.id)) toast('Renamed on disk'); } } renderFiles(); renderEditor(); };
     inp.addEventListener('blur',done); inp.addEventListener('keydown',ev=>{ if(ev.key==='Enter') inp.blur(); if(ev.key==='Escape'){ inp.value=f.name; inp.blur(); } }); return; }
@@ -1326,15 +1393,16 @@ $('#importInput').addEventListener('change',async e=>{ const fl=[...e.target.fil
 $('#sourceBox').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.id==='btnReconnect') reconnectFolder(); if(b.id==='btnLeaveFolder') leaveFolder(); });
 $('#heroFolder').addEventListener('click',()=>{ location.hash='#write'; setTimeout(addFolder,50); });
 $('#closingFolder').addEventListener('click',()=>{ location.hash='#write'; setTimeout(addFolder,50); });
-$$('#fontSeg button').forEach(b=>b.addEventListener('click',()=>{ state.settings.font=b.dataset.f; save(); renderEditor(); renderSettings(); }));
-$('#sizeUp').addEventListener('click',()=>{ state.settings.size=Math.min(26,state.settings.size+1); save(); renderEditor(); renderSettings(); });
-$('#sizeDown').addEventListener('click',()=>{ state.settings.size=Math.max(14,state.settings.size-1); save(); renderEditor(); renderSettings(); });
-$('#tierTop').addEventListener('change',e=>{ state.settings.tier=e.target.value; save(); renderSettings(); toast('Model tier: '+e.target.options[e.target.selectedIndex].text); });
+$$('#fontSeg button').forEach(b=>b.addEventListener('click',()=>{ prefs.settings.font=b.dataset.f; save(); renderEditor(); renderSettings(); }));
+$('#sizeUp').addEventListener('click',()=>{ prefs.settings.size=Math.min(26,prefs.settings.size+1); save(); renderEditor(); renderSettings(); });
+$('#sizeDown').addEventListener('click',()=>{ prefs.settings.size=Math.max(14,prefs.settings.size-1); save(); renderEditor(); renderSettings(); });
+$('#tierTop').addEventListener('change',e=>{ prefs.settings.tier=e.target.value; save(); renderSettings(); toast('Model tier: '+e.target.options[e.target.selectedIndex].text); });
 $('#btnZen').addEventListener('click',()=>setZen(true)); $('#zenExit').addEventListener('click',()=>setZen(false));
 $('#btnPreview').addEventListener('click',()=>togglePreview());
 $('#btnCheck').addEventListener('click',()=>showTab('checks'));
 $('#tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) showTab(b.dataset.tab); });
 $('#panel-checks').addEventListener('click',e=>{ const b=e.target.closest('button.run'); if(!b||b.disabled) return; runCheck(b.closest('.check-row').dataset.check); });
+$('#panel-checks').addEventListener('change',e=>{ if(e.target.id==='scopeSel') checkSelOnly=e.target.checked; });
 $('#panel-comments').addEventListener('click',e=>{
   if(e.target.id==='dismissAll'){ const f=active(); state.comments=state.comments.filter(c=>c.fileId!==f.id); save(); renderComments(); return; }
   const card=e.target.closest('.cmt'); if(!card) return; const c=state.comments.find(x=>x.id===card.dataset.id); if(!c) return; const act=e.target.closest('button')?.dataset.act; const f=active();
@@ -1346,7 +1414,7 @@ $('#panel-comments').addEventListener('click',e=>{
 });
 $('#chatSend').addEventListener('click',()=>{ const v=$('#chatInput').value.trim(); if(!v) return; $('#chatInput').value=''; sendChat(v); });
 $('#chatInput').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); $('#chatSend').click(); } });
-$('#snippetChips').addEventListener('click',e=>{ const b=e.target.closest('[data-snip]'); if(!b) return; if(!chatSel.text){ toast('Select a passage in the editor first.'); return; } sendChat(state.snippets[+b.dataset.snip].prompt); });
+$('#snippetChips').addEventListener('click',e=>{ const b=e.target.closest('[data-snip]'); if(!b) return; if(!chatSel.text){ toast('Select a passage in the editor first.'); return; } sendChat(prefs.snippets[+b.dataset.snip].prompt); });
 $('#chatLog').addEventListener('click',e=>{
   const ins=e.target.closest('[data-ins]'), cp=e.target.closest('[data-copy]');
   if(ins){ const t=chat[+ins.dataset.ins].content; const f=active(); if(!f) return; const ed=$('#editor'); const p=ed.selectionEnd ?? ed.value.length; replaceRange(p,p,'\n\n'+t+'\n\n'); renderFiles(); toast('Inserted. Ctrl+Z undoes it.'); }
@@ -1354,20 +1422,23 @@ $('#chatLog').addEventListener('click',e=>{
 });
 $('#panel-settings').addEventListener('input',e=>{
   const t=e.target;
-  if(t.id==='setSize'){ state.settings.size=+t.value; $('#sizeVal').textContent=t.value; save(); renderEditor(); }
+  if(t.id==='setSize'){ prefs.settings.size=+t.value; $('#sizeVal').textContent=t.value; save(); renderEditor(); }
   if(t.id==='ccPrompt'){ $('#ccCount').textContent=t.value.length; }
-  if(t.id==='setRules'){ state.rules=t.value; $('#rulesCount').textContent=t.value.length; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ saveTimer=null; save(); },400); }
-  const sn=t.closest('.snip'); if(sn){ state.snippets[+sn.dataset.i][t.dataset.k]=t.value; save(); renderChat(); }
+  if(t.id==='setRules'){ state.rules=t.value; $('#rulesCount').textContent=t.value.length; clearTimeout(rulesTimer); rulesTimer=setTimeout(save,400); }
+  const sn=t.closest('.snip'); if(sn){ prefs.snippets[+sn.dataset.i][t.dataset.k]=t.value; save(); renderChat(); }
 });
-$('#panel-settings').addEventListener('change',e=>{ const t=e.target; if(t.id==='setFont'){ state.settings.font=t.value; save(); renderEditor(); } if(t.id==='setTier'){ state.settings.tier=t.value; save(); renderEditor(); } });
+$('#panel-settings').addEventListener('change',e=>{ const t=e.target; if(t.id==='setFont'){ prefs.settings.font=t.value; save(); renderEditor(); } if(t.id==='setTier'){ prefs.settings.tier=t.value; save(); renderEditor(); } });
 $('#panel-settings').addEventListener('click',e=>{
   const t=e.target.closest('button'); if(!t) return;
-  if(t.id==='addSnip'){ state.snippets.push({name:'new',prompt:''}); save(); renderSettings(); renderChat(); }
-  if(t.dataset.del!=null){ state.snippets.splice(+t.dataset.del,1); save(); renderSettings(); renderChat(); }
+  if(t.id==='addSnip'){ prefs.snippets.push({name:'new',prompt:''}); save(); renderSettings(); renderChat(); }
+  if(t.dataset.del!=null){ prefs.snippets.splice(+t.dataset.del,1); save(); renderSettings(); renderChat(); }
   if(t.id==='ccSave'){ const name=$('#ccName').value.trim(), prompt=$('#ccPrompt').value.trim(); if(!name||!prompt){ toast('Give the check a name and instructions.'); return; } state.customChecks.push({id:'cc_'+uid(),name,prompt}); save(); renderSettings(); renderChecks(); toast('Saved. Find it under Checks → Your checks.'); }
   if(t.dataset.ccdel){ state.customChecks=state.customChecks.filter(c=>c.id!==t.dataset.ccdel); save(); renderSettings(); renderChecks(); }
-  if(t.id==='resetSample'){ $('#resetConfirm').innerHTML=`<span class="inline-confirm">This erases the files, comments and AI rules of ${state.source==='folder'?'this view (your folder on disk is untouched) ':'the in-browser project '}and loads the sample novel. Font, model tier, snippets and custom checks stay. <button class="btn sm" id="resetYes">Reset</button><button class="btn sm ghost" id="resetNo">Keep</button></span>`; }
-  if(t.id==='resetYes'){ handles.clear(); disk.clear(); dirHandle=null; savedDir=null; idb.del('dir'); state=seed({settings:state.settings,snippets:state.snippets,customChecks:state.customChecks,checksDone:state.checksDone}); chat=[]; clearSel(); save(); renderAll(); toast('Sample novel restored'); }
+  if(t.id==='resetSample'){ $('#resetConfirm').innerHTML=state.source==='folder'?`<span class="inline-confirm">You are working in a folder. This disconnects it (nothing on disk changes) and returns to the in-browser project. <button class="btn sm" id="resetLeave">Leave folder</button><button class="btn sm ghost" id="resetNo">Keep</button></span>`:`<span class="inline-confirm">This erases the files, comments, AI rules and custom checks of the in-browser project and loads the sample novel. Font, model tier and snippets stay. <button class="btn sm" id="resetYes">Reset</button><button class="btn sm ghost" id="resetNo">Keep</button></span>`; }
+  if(t.id==='resetLeave'){ leaveFolder(); }
+  if(t.id==='backupRestore'){ let b=null; try{ b=JSON.parse(localStorage.getItem(STORE_BACKUP)); }catch(e){} if(b&&b.files){ for(const bf of b.files){ let name=bf.name.replace(/(\.[^./]+)?$/,' (disk copy)$1'); let k=2; while(state.files.some(f=>f.name===name)) name=bf.name.replace(/(\.[^./]+)?$/,` (disk copy ${k++})$1`); state.files.push({id:uid(),name,content:bf.disk,color:null}); } localStorage.removeItem(STORE_BACKUP); save(); renderAll(); toast(`${b.files.length} disk cop${b.files.length===1?'y':'ies'} added to the project (not written to disk).`); } }
+  if(t.id==='backupDiscard'){ localStorage.removeItem(STORE_BACKUP); renderSettings(); toast('Backup discarded'); }
+  if(t.id==='resetYes'){ state=seed(); chat=[]; clearSel(); save(); renderAll(); toast('Sample novel restored'); }
   if(t.id==='resetNo'){ $('#resetConfirm').innerHTML=''; }
 });
 $('#btnExport').addEventListener('click',openExport);
